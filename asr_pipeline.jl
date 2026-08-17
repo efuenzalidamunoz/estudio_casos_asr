@@ -4,7 +4,7 @@
 const WHISPER_CLI = joinpath(@__DIR__, "whisper.cpp", "build", "bin", "whisper-cli")
 const LANGUAGE    = "es"
 const AUDIO_DIR   = joinpath(@__DIR__, "audio")
-const WAV_FILES   = ["test1.wav", "test2.wav", "test3.wav"]
+const WAV_FILES   = ["test1.wav", "test2.wav", "test3.wav","test4.wav","test5.wav","test6.wav","test7.wav","test8.wav","test9.wav","test10.wav"]
 const GROUNDTRUTH = joinpath(@__DIR__, "groundtruth.txt")
 const OUT_DIR     = joinpath(@__DIR__, "out")
 
