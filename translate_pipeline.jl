@@ -8,7 +8,7 @@
 const OUT_DIR     = joinpath(@__DIR__, "out")
 const GROUNDTRUTH = joinpath(@__DIR__, "groundtruth.txt")
 const RESULTS_DIR = joinpath(@__DIR__, "translations")
-const OLLAMA_URL  = "http://geoespacial.ucm.cl:11434/api/generate"
+const OLLAMA_URL  = "http://localhost:11434/api/generate"
 
 function usage_and_exit()
     println(stderr, "uso: julia translate_pipeline.jl <modelo_ollama> <idioma_objetivo>")
