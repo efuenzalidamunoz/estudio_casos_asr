@@ -90,7 +90,7 @@ function translate(text::AbstractString, model::String, target_lang::String)
               "or additional commentary.\n\nText: $text"
 
     payload = """{"model":"$(json_escape(model))","prompt":"$(json_escape(prompt))",""" *
-              """"stream":false,"think":false,"options":{"temperature":0}}"""
+                  """"stream":false,"think":false,"options":{"temperature":0,"seed":67}}""" # semilla 67
 
     cmd = Cmd(["curl", "-s", "-X", "POST", OLLAMA_URL,
                "-H", "Content-Type: application/json",
