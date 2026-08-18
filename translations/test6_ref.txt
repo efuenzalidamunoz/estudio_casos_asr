@@ -1,0 +1,1 @@
+Is he currently taking any medication? Tell me the name of the medications he uses, the amount he takes, and how many times a day he normally uses them. I also need to know if he took any of these medications today and approximately what time he took the last dose.

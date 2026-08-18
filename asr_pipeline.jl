@@ -103,7 +103,7 @@ end
 function cer(reference::AbstractString, hypothesis::AbstractString)
     ref_chars = collect(normalize(reference))
     hyp_chars = collect(normalize(hypothesis))
-    isempty(ref_chars) && return hyp_cHa tenido fiebre durante las últihars == ref_chars ? 0.0 : Inf
+    isempty(ref_chars) && return hyp_chars == ref_chars ? 0.0 : Inf
     return levenshtein(ref_chars, hyp_chars) / length(ref_chars)
 end
 
