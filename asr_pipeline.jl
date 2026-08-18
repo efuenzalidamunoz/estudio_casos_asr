@@ -46,7 +46,7 @@ end
 function transcribe(wav_file::String, model::String)
     base = splitext(basename(wav_file))[1]
     out_prefix = joinpath(OUT_DIR, base)
-    cmd = `$WHISPER_CLI -m $model -f $wav_file -l $LANGUAGE -nt -np -otxt -of $out_prefix -t 4` # usar 4 hilos
+    cmd = `$WHISPER_CLI -m $model -f $wav_file -l $LANGUAGE -nt -np -otxt -of $out_prefix -t 4 --temperature 0.0` # usar 4 hilos y temperature = 0
     elapsed = @elapsed run(pipeline(cmd; stdout=devnull, stderr=devnull))
 
     hypothesis = strip(read(out_prefix * ".txt", String))
