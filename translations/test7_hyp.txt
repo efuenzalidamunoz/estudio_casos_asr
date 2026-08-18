@@ -1,1 +1,1 @@
-Is currently taking some medication, tell me the name of the medications you use, the amount you take, and how many times a day you normally use it. I also need to know if you took any of these medications today and approximately when you took the last dose here now.
+Is currently taking something medication? Tell me the name of the medications you use, the amount you take, and how many times you normally use them. Also, I need to know if you took any of these medications today and approximately when you took the last dose.
