@@ -1,0 +1,14 @@
+Referencia -> LLM
+Error entrada = 0
+Error salida = 1 - chrF_ref/100
+Kappa = N/A
+
+ASR alta precision -> LLM
+Error entrada = CER Base
+Error salida = 1 - chrF_base/100
+Kappa = Error salida / Error entrada
+
+ASR cuantizado -> LLM
+Error entrada = CER Q4_0
+Error salida = 1 - chrF_q4/100
+Kappa = Error salida / Error entrada
