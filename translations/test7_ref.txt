@@ -1,1 +1,1 @@
-Is he taking any medication currently? Tell me the name of the medications he uses, the amount he takes, and how many times a day he normally takes them. I also need to know if he took any of these medications today and approximately what time he took the last dose.
+Is currently taking any medications? Please tell me the names of the medications you are taking, the amount you take, and how many times a day you take them normally. I also need to know if you’ve taken any of these medications today and approximately what time you last took them.
