@@ -17,27 +17,28 @@ for modelo in "${modelos[@]}"; do
   OUT_FILE="scripts_out/R2/salida_${modelo}.txt"
   TEMP_TIME="scripts_out/R2/temp_time.log"
 
-  # Ejecutar ASR (sobrescribe el archivo si existe)
-  /usr/bin/time -v -o "$TEMP_TIME" julia asr_pipeline.jl "whisper.cpp/models/${modelo}" > "$OUT_FILE" 2>&1
-  KBYTES_ASR=$(grep "Maximum resident set size" "$TEMP_TIME" | tr -dc '0-9')
+  # Ejecutar ASR y medir el pico de RAM de whisper
+  /usr/bin/time -v -o "$TEMP_TIME" \
+    julia asr_pipeline.jl "whisper.cpp/models/${modelo}" \
+    > "$OUT_FILE" 2>&1
 
-  # Ejecutar traduccion (se anexa al mismo archivo)
-  /usr/bin/time -v -o "$TEMP_TIME" julia translate_pipeline.jl "$LLM_MODEL" English >> "$OUT_FILE" 2>&1
-  KBYTES_TRANS=$(grep "Maximum resident set size" "$TEMP_TIME" | tr -dc '0-9')
+  # Obtener Maximum Resident Set Size (pico de RAM)
+  KBYTES_ASR=$(grep "Maximum resident set size" "$TEMP_TIME" | awk '{print $NF}')
 
-  # Sumar la memoria de ambas partes y convertir a MB
-  # arreglar que no sea la suma de las memorias ram sino el pico de uso
-  if [ -n "$KBYTES_ASR" ] && [ -n "$KBYTES_TRANS" ]; then
-    KBYTES_PEAK=$(( KBYTES_ASR > KBYTES_TRANS ? KBYTES_ASR : KBYTES_TRANS ))
-    MB_PEAK=$(awk -v k="$KBYTES_PEAK" 'BEGIN {printf "%.2f", k / 1024}')
+  # Convertir KiB a MiB
+  if [ -n "$KBYTES_ASR" ]; then
+    MB_ASR=$(awk -v k="$KBYTES_ASR" 'BEGIN {printf "%.2f", k / 1024}')
   else
-    MB_PEAK="0.00"
-    echo "No se pudo leer la memoria."
+    MB_ASR="0.00"
+    echo "No se pudo leer la memoria del ASR."
   fi
 
+  julia translate_pipeline.jl "$LLM_MODEL" English >> "$OUT_FILE" 2>&1
+
   echo "" >> "$OUT_FILE"
-  echo "Pico de uso de RAM: $MB_PEAK MB" >> "$OUT_FILE"
+  echo "RAM pico Whisper: $MB_ASR MB" >> "$OUT_FILE"
 
   rm -f "$TEMP_TIME"
+
   echo "Listo"
 done
