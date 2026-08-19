@@ -1,0 +1,4 @@
+Modelo,chrF,Error_Traduccion
+gemma3:1b-it-fp16,80.1400,19.8600
+gemma3:1b-it-q8_0,82.2500,17.7500
+gemma3:1b-it-q4_K_M,81.5300,18.4700
