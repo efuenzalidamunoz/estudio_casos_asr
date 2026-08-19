@@ -1,5 +1,3 @@
-using Printf
-
 modelos = [
     "gemma3:1b-it-fp16",
     "gemma3:1b-it-q8_0",
@@ -24,6 +22,16 @@ function extraer_chrf(salida_texto)
     return 0.0
 end
 
+# Funcion auxiliar para formatear numeros a 2 decimales
+function fmt2(x)
+    s = string(round(x, digits=2))
+    if occursin('.', s)
+        p = split(s, '.')
+        return p[1] * "." * rpad(p[2], 2, '0')
+    end
+    return s * ".00"
+end
+
 archivo_salida = "scripts_out/R3/resultados_error_llm.txt"
 mkpath(dirname(archivo_salida))
 
@@ -35,13 +43,16 @@ open(archivo_salida, "w") do f
             salida = read(cmd, String)
             chrf = extraer_chrf(salida)
             error_llm = 100.0 - chrf
-            @printf(f, "%s,%.2f,%.2f\n", modelo, chrf, error_llm)
+
+            # Usamos interpolación de cadenas y nuestra función fmt2
+            write(f, "$modelo,$(fmt2(chrf)),$(fmt2(error_llm))\n")
         catch e
             # Permite que se detenga el script con ctrl+c
             if isa(e, InterruptException)
                 rethrow(e)
             end
-            @printf(f, "%s,ERROR,ERROR\n", modelo)
+            write(f, "$modelo,ERROR,ERROR\n")
+            # @warn es una macro nativa de Base, no requiere importar nada
             @warn "Falló la ejecución para el modelo: $modelo" exception=e
         end
     end
