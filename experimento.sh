@@ -28,14 +28,15 @@ for modelo in "${modelos[@]}"; do
   # Sumar la memoria de ambas partes y convertir a MB
   # arreglar que no sea la suma de las memorias ram sino el pico de uso
   if [ -n "$KBYTES_ASR" ] && [ -n "$KBYTES_TRANS" ]; then
-    MB_TOTAL=$(awk -v k1="$KBYTES_ASR" -v k2="$KBYTES_TRANS" 'BEGIN {printf "%.2f", (k1 + k2) / 1024}')
+    KBYTES_PEAK=$(( KBYTES_ASR > KBYTES_TRANS ? KBYTES_ASR : KBYTES_TRANS ))
+    MB_PEAK=$(awk -v k="$KBYTES_PEAK" 'BEGIN {printf "%.2f", k / 1024}')
   else
-    MB_TOTAL="0.00"
+    MB_PEAK="0.00"
     echo "No se pudo leer la memoria."
   fi
 
   echo "" >> "$OUT_FILE"
-  echo "RAM usada: $MB_TOTAL MB" >> "$OUT_FILE"
+  echo "Pico de uso de RAM: $MB_PEAK MB" >> "$OUT_FILE"
 
   rm -f "$TEMP_TIME"
   echo "Listo"
