@@ -1,7 +1,6 @@
 #!/bin/bash
 
-cd .. && cd ..
-mkdir -p raw_output
+mkdir -p scripts_out/R2/
 LLM_MODEL="gemma3:1b-it-q4_K_M"
 
 modelos=(
@@ -15,8 +14,8 @@ modelos=(
 for modelo in "${modelos[@]}"; do
   echo "Procesando con $modelo..."
 
-  OUT_FILE="scripts_out/salida_${modelo}.txt"
-  TEMP_TIME="scripts_out/temp_time.log"
+  OUT_FILE="scripts_out/R2/salida_${modelo}.txt"
+  TEMP_TIME="scripts_out/R2/temp_time.log"
 
   # Ejecutar ASR (sobrescribe el archivo si existe)
   /usr/bin/time -v -o "$TEMP_TIME" julia asr_pipeline.jl "whisper.cpp/models/${modelo}" > "$OUT_FILE" 2>&1
