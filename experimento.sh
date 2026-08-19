@@ -26,6 +26,7 @@ for modelo in "${modelos[@]}"; do
   KBYTES_TRANS=$(grep "Maximum resident set size" "$TEMP_TIME" | tr -dc '0-9')
 
   # Sumar la memoria de ambas partes y convertir a MB
+  # arreglar que no sea la suma de las memorias ram sino el pico de uso
   if [ -n "$KBYTES_ASR" ] && [ -n "$KBYTES_TRANS" ]; then
     MB_TOTAL=$(awk -v k1="$KBYTES_ASR" -v k2="$KBYTES_TRANS" 'BEGIN {printf "%.2f", (k1 + k2) / 1024}')
   else
