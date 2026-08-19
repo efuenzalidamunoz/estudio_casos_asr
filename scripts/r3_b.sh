@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p scripts_out/R2/
+mkdir -p scripts_out/R2/b/
 LLM_MODEL="gemma3:1b-it-q4_K_M"
 
 modelos=(
@@ -14,8 +14,8 @@ modelos=(
 for modelo in "${modelos[@]}"; do
   echo "Procesando con $modelo..."
 
-  OUT_FILE="scripts_out/R2/salida_${modelo}.txt"
-  TEMP_TIME="scripts_out/R2/temp_time.log"
+  OUT_FILE="scripts_out/R2/b/salida_${modelo}.txt"
+  TEMP_TIME="scripts_out/R2/b/temp_time.log"
 
   # Ejecutar ASR y medir el pico de RAM de whisper
   /usr/bin/time -v -o "$TEMP_TIME" \

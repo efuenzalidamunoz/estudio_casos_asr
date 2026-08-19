@@ -1,4 +1,0 @@
-Modelo,chrF,Error_Traduccion
-gemma3:1b-it-fp16,80.14,19.86
-gemma3:1b-it-q8_0,82.25,17.75
-gemma3:1b-it-q4_K_M,81.53,18.47

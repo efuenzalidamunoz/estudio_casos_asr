@@ -1,9 +1,0 @@
-Condicion experimental,Error entrada,Error salida,κ empirico
-Referencia -> LLM,0.0000,0.0000,N/A
-ASR alta precisión -> LLM,0.021,0.1611,7.6714
-ASR cuantizado -> LLM,0.034,0.2096,6.1647
-
-Datos utilizados
-Modelo,CER promedio,chrF promedio,Error salida,Kappa
-ggml-base.bin,0.021,83.89,0.1611,7.6714
-ggml-base-q4_0.bin,0.034,79.04,0.2096,6.1647
