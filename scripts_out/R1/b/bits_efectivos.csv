@@ -1,0 +1,6 @@
+formato,pesos_por_bloque,bits_pesos,bits_metadata,bits_totales_bloque,bits_efectivos_por_peso
+base,1,32,0,32,32.00
+tiny,1,16,0,16,16.00
+q8_0,32,256,16,272,8.50
+q5_1,32,160,32,192,6.00
+q4_0,32,128,16,144,4.50
