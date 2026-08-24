@@ -2,7 +2,7 @@
 
 set -euo pipefail
 OUTPUT_DIR="scripts_out/R3/b"
-# Mantener SIEMPRE el mismo LLM en las tres condiciones
+# Mantener el mismo LLM en las tres condiciones
 LLM_MODEL="gemma3:1b-it-q4_K_M"
 LANGUAGE="English"
 # Modelos Whisper
