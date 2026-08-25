@@ -18,7 +18,7 @@ for modelo in "${modelos[@]}"; do
   OUT_FILE="scripts_out/R2/b/salida_${modelo}.txt"
 
   # Ejecutar ASR
-  julia asr_pipeline.jl "whisper.cpp/models/${modelo}" \
+  julia asr_pipeline_igpu.jl "whisper.cpp/models/${modelo}" \
     > "$OUT_FILE" 2>&1
 
   # Ejecutar traduccion

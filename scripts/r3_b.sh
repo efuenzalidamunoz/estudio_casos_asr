@@ -45,7 +45,7 @@ OUT_BASE="$OUTPUT_DIR/02_asr_alta_precision_llm.txt"
     echo "----------------------------------------"
     echo
 
-    julia asr_pipeline.jl "$ASR_ALTA"
+    julia asr_pipeline_igpu.jl "$ASR_ALTA"
 
     echo
     echo "----------------------------------------"
@@ -76,7 +76,7 @@ OUT_Q4="$OUTPUT_DIR/03_asr_cuantizado_llm.txt"
     echo "----------------------------------------"
     echo
 
-    julia asr_pipeline.jl "$ASR_CUANTIZADO"
+    julia asr_pipeline_igpu.jl "$ASR_CUANTIZADO"
 
     echo
     echo "----------------------------------------"

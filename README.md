@@ -21,6 +21,28 @@ $$\tilde{w}_i = d \cdot q_i + m, \quad q_i \in \mathbb{Z} \cap [q_{\min},\, q_{\
 
 El objetivo del estudio es responder: **¿cuánta precisión numérica se puede sacrificar antes de que la traducción deje de ser clínicamente confiable?**
 
+### 🖥️ Nota sobre el uso de la GPU integrada (iGPU)
+
+El equipo de pruebas cuenta con dos dispositivos gráficos:
+
+| Dispositivo | Tipo | VRAM |
+|---|---|---|
+| **NVIDIA GeForce GTX 1650** | GPU dedicada | 4 GB |
+| **Intel UHD Graphics (CML GT2)** | GPU integrada (iGPU) | Memoria compartida con RAM |
+
+La GTX 1650 no dispone de VRAM suficiente para cargar los modelos de Whisper y Gemma 3 simultáneamente, por lo que se **forzó el uso exclusivo de la GPU integrada Intel** en ambos componentes del pipeline:
+
+- **whisper.cpp**: se compiló con soporte **Vulkan** y se utiliza la variable de entorno `MESA_VK_DEVICE_SELECT=8086:9bc4!` para que whisper-cli solo vea la iGPU Intel. El sufijo `!` oculta los demás dispositivos Vulkan (GTX 1650 y llvmpipe), garantizando que toda la inferencia ASR se ejecute en la iGPU.
+
+- **Ollama**: se configura para usar la iGPU Intel mediante las variables de entorno:
+  ```bash
+  export OLLAMA_INTEL_GPU=true
+  export HSA_OVERRIDE_GFX_VERSION=0  # Evita intentar usar la GPU dedicada
+  ```
+  Esto asegura que Gemma 3 se ejecute sobre la GPU integrada, aprovechando la memoria RAM compartida en lugar de la VRAM limitada de la GTX 1650.
+
+> **¿Por qué no usar la GTX 1650?** Con solo 4 GB de VRAM, cargar un modelo Whisper (~300 MB) y un LLM Gemma 3 fp16 (~2.4 GB) excedería la capacidad disponible. La iGPU Intel, al compartir la RAM del sistema (~16 GB), permite cargar modelos más grandes a costa de un menor ancho de banda de memoria.
+
 ## 🏗️ Arquitectura del Experimento
 
 ```
@@ -55,7 +77,7 @@ El objetivo del estudio es responder: **¿cuánta precisión numérica se puede 
 
 ```
 estudio_casos_asr/
-├── asr_pipeline.jl          # Pipeline principal: transcripción + métricas WER/CER/RTF
+├── asr_pipeline_igpu.jl     # Pipeline principal: transcripción + métricas WER/CER/RTF (iGPU)
 ├── translate_pipeline.jl    # Traducción vía Ollama + evaluación chrF
 ├── translate_reference.jl   # Traduce solo la referencia para aislar error del LLM
 ├── calcular_d.py            # Extrae el factor de escala d de modelos cuantizados GGML
@@ -104,15 +126,17 @@ git clone https://github.com/<usuario>/estudio_casos_asr.git
 cd estudio_casos_asr
 ```
 
-### 2. Compilar whisper.cpp
+### 2. Compilar whisper.cpp (con soporte Vulkan para iGPU)
 
 ```bash
 git clone https://github.com/ggml-org/whisper.cpp.git
 cd whisper.cpp
-cmake -B build
-cmake --build build --config Release
+cmake -B build-vulkan -DGGML_VULKAN=ON
+cmake --build build-vulkan --config Release
 cd ..
 ```
+
+> **Nota:** La opción `-DGGML_VULKAN=ON` habilita la aceleración por GPU vía Vulkan. El pipeline fuerza automáticamente el uso de la iGPU Intel mediante `MESA_VK_DEVICE_SELECT`.
 
 ### 3. Descargar el modelo base de Whisper
 
@@ -132,6 +156,13 @@ curl -fsSL https://ollama.com/install.sh | sh
 ollama pull gemma3:1b-it-q4_K_M
 ollama pull gemma3:1b-it-q8_0
 ollama pull gemma3:1b-it-fp16
+```
+
+**Forzar uso de la iGPU Intel en Ollama** (agregar al `.bashrc` o ejecutar antes de `ollama serve`):
+
+```bash
+export OLLAMA_INTEL_GPU=true
+export HSA_OVERRIDE_GFX_VERSION=0
 ```
 
 ### 5. Dependencias de Python
@@ -165,7 +196,7 @@ Analiza los bloques cuantizados de cada modelo GGML y calcula estadísticas (mí
 
 **R2a) Transcribir audio con un modelo específico:**
 ```bash
-julia asr_pipeline.jl whisper.cpp/models/ggml-base.bin
+julia asr_pipeline_igpu.jl whisper.cpp/models/ggml-base.bin
 ```
 Transcribe los 10 archivos de audio, calcula WER, CER y RTF para cada uno y muestra promedios.
 
