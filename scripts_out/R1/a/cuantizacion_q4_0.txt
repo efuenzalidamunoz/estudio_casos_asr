@@ -264,5 +264,5 @@ whisper_model_quantize: loading model from 'whisper.cpp/models/ggml-base.bin'
 ggml_common_quantize_0: model size  =   276.92 MB
 ggml_common_quantize_0: quant size  =    43.76 MB | ftype = 2 (q4_0)
 
-main: quantize time =  1309.31 ms
-main:    total time =  1309.31 ms
+main: quantize time =  1292.45 ms
+main:    total time =  1292.45 ms

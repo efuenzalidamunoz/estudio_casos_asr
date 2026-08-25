@@ -81,7 +81,7 @@ ax.grid(
 for xi, yi in zip(x, wer):
 
     ax.annotate(
-        f"{yi:.2f}%",
+        f"{(yi * 100):.1f}%",
         xy=(xi, yi),
         xytext=(0, 7),
         textcoords="offset points",

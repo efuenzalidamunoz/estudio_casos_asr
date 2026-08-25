@@ -7,10 +7,10 @@ Error de entrada (WER): 0
 
 archivo     chrF      
 ----------------------
-test1.wav   81.0      
+test1.wav   82.03     
   ref (es):          Ahora vamos a tomar sus signos vitales para conocer mejor su estado de salud. Vamos a medir su presión arterial, temperatura, frecuencia cardíaca y nivel de oxígeno. Le pediré que permanezca tranquilo y sentado durante unos minutos mientras realizamos las mediciones necesarias.
   ref (English): Now we're going to take your vital signs to get a better understanding of your health. We'll measure your blood pressure, temperature, heart rate, and oxygen level. I'd like you to remain calm and seated for a few minutes while we take the necessary measurements.
-  LLM -> English: Now, let’s take your astrological signs for a better understanding of your health. We will measure your blood pressure, temperature, heart rate, and oxygen level. I will ask you to remain calm and seated for a few minutes while we take the measurements.
+  LLM -> English: Now we will take your vital signs to better understand your health status. We will measure your blood pressure, temperature, heart rate, and oxygen level. I will ask you to remain calm and seated for a few minutes while we take the measurements necessary.
 
 test10.wav  84.4      
   ref (es):          No se preocupe, vamos a ayudarle y a evaluar su situación lo antes posible. Mientras espera, si comienza a sentirse peor, presenta dificultad para respirar, dolor intenso en el pecho, pérdida del conocimiento, confusión o cualquier otro síntoma que le preocupe, avísenos inmediatamente para poder atenderlo.
@@ -27,20 +27,20 @@ test3.wav   79.18
   ref (English): I'd like you to tell me exactly where you feel the pain. Tell me if it's in your chest, abdomen, back, head, or some other part of your body. I also need to know when it started, how severe it is on a scale of one to ten, and if the pain increases when you walk, breathe, or move.
   LLM -> English: I want you to tell me exactly where he/she feels the pain. Tell me if it’s in the chest, abdomen, back, head, or any other part of the body. I also need to know when it started, how strong it is on a scale of one to ten, and if the pain increases when walking, breathing, or moving.
 
-test4.wav   75.27     
+test4.wav   70.61     
   ref (es):          Necesito saber si tiene dificultad para respirar o si siente que le falta el aire. Dígame también si presenta dolor en el pecho, mareos, debilidad, palpitaciones o sensación de desmayo. Es importante que me indique cuándo comenzaron estos síntomas y si han aumentado o disminuido desde que llegaron al centro de atención.
   ref (English): I need to know if you are having difficulty breathing or feel short of breath. Please also tell me if you have chest pain, dizziness, weakness, palpitations, or feel faint. It is important that you tell me when these symptoms started and if they have gotten better or worse since you arrived at the care center.
-  LLM -> English: I need to know if you have difficulty breathing or if you feel like you can’t get enough air. Please tell me if you are experiencing chest pain, dizziness, weakness, palpitations, or the sensation of fainting. It is important that I know when these symptoms started and if they have increased or decreased since you arrived at the medical center.
+  LLM -> English: I need to know if you have difficulty breathing or if you feel like you can’t get enough air. Tell me if you’re experiencing chest pain, dizziness, weakness, palpitations, or the sensation of fainting. It’s important that I know when these symptoms started and if they’ve increased or decreased since you arrived at the center of attention.
 
-test5.wav   80.11     
+test5.wav   82.76     
   ref (es):          ¿Ha tenido fiebre durante las últimas horas o durante los últimos días? También quiero saber si ha presentado tos, dolor de garganta, escalofríos, congestión nasal, vómitos o diarrea. Dígame cuándo comenzaron estos síntomas, si ha tomado algún medicamento y si ha notado alguna mejoría después de tomarlo.
   ref (English): Have you had a fever in the last few hours or days? I also want to know if you have had a cough, sore throat, chills, nasal congestion, vomiting, or diarrhea. Please tell me when these symptoms started, if you have taken any medication, and if you have noticed any improvement after taking it.
-  LLM -> English: Has had a fever for the last few hours or the last few days? I also want to know if he has presented with cough, sore throat, chills, nasal congestion, vomiting or diarrhea. Tell me when these symptoms started, if he has taken any medication, and if he has noticed any improvement after taking it.
+  LLM -> English: Has had a fever for the last few hours or the last few days? I also want to know if he has presented with cough, sore throat, chills, nasal congestion, vomiting or diarrhea. Please tell me when these symptoms started, if he has taken any medication, and if he has noticed any improvement after taking it.
 
-test6.wav   73.29     
+test6.wav   73.66     
   ref (es):          ¿Tiene alguna enfermedad o condición médica que debamos conocer antes de atenderlo? Dígame si tiene diabetes, hipertensión, asma, problemas cardíacos, enfermedades respiratorias u otra condición importante. También necesito saber si ha tenido alguna operación recientemente o si ha estado hospitalizado durante las últimas semanas.
   ref (English): Do you have any illnesses or medical conditions that we should know about before we see you? Please tell me if you have diabetes, high blood pressure, asthma, heart problems, respiratory illnesses, or any other significant condition. I also need to know if you have had any surgery recently or if you have been hospitalized in the last few weeks.
-  LLM -> English: Do you have any medical condition or health condition we should know before treating you? Please let me know if you have diabetes, hypertension, asthma, heart problems, respiratory illnesses, or any other important condition. Also, I need to know if you’ve had any recent surgeries or if you’ve been hospitalized in the last few weeks.
+  LLM -> English: Do you have any medical condition or health condition we should know before treating you? Please tell me if you have diabetes, hypertension, asthma, heart problems, respiratory illnesses, or any other important condition. Also, I need to know if you’ve had any recent surgeries or been hospitalized in the last few weeks.
 
 test7.wav   83.26     
   ref (es):          ¿Está tomando actualmente algún medicamento? Dígame el nombre de los medicamentos que utiliza, la cantidad que toma y cuántas veces al día los utiliza normalmente. También necesito saber si tomó alguno de estos medicamentos hoy y aproximadamente a qué hora tomó la última dosis.
@@ -58,4 +58,4 @@ test9.wav   76.34
   LLM -> English: I want to know when the last time I ate and drank something. Tell me what foods I consumed during the day and if I have been able to drink water normally. If I have had vomiting or diarrhea, I need to know how many times it has happened and if I have been able to keep any liquid without vomiting.
 
 ----------------------
-chrF promedio: 78.95
+chrF promedio: 78.89

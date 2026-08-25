@@ -1,6 +1,6 @@
 formato,bits_efectivos,wer_promedio
-base,32.0,0.096
-tiny,16.0,0.216
+base,32.0,0.1
+tiny,16.0,0.221
 q8_0,8.5,0.096
 q5_1,6.0,0.115
-q4_0,4.5,0.144
+q4_0,4.5,0.139

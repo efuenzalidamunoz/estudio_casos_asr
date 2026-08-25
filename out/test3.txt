@@ -1,1 +1,1 @@
-Quiero que me indique exactamente dónde siente el dolor. Dígame si está en el pecho, abdomen, espalda, cabeza o alguna otra parte del cuerpo. También necesito saber desde cuando comenzó qué tan fuerte es en una escala el 1 al 10 y si el dolor aumenta cuando camina, respira o se mueve.
+Quiero que me indique exactamente dónde siente el dolor. Dígame si está en el pecho, abdomen, espalda, cabeza, o alguna otra parte del cuerpo. También necesito saber desde cuando comenzó qué tan fuerte es en una escala el 1 al 10 y si el dolor aumenta cuando camina respira o se mueve.
