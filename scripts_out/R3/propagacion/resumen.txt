@@ -1,0 +1,37 @@
+============================================================
+R3 - PROPAGACIÓN DEL ERROR ASR -> LLM
+============================================================
+
+ERROR DE ENTRADA - ASR
+------------------------------------------------------------
+Base:
+WER promedio: 0.1
+CER promedio: 0.023
+RTF promedio: 0.246
+
+Base-Q4_0:
+WER promedio: 0.139
+CER promedio: 0.036
+RTF promedio: 0.266
+
+
+ERROR DE SALIDA - chrF
+============================================================
+
+Gemma3:1B FP16
+------------------------------------------------------------
+Referencia -> LLM: chrF promedio: 79.44
+Base -> LLM: chrF promedio: 72.7
+Base-Q4_0 -> LLM: chrF promedio: 70.97
+
+Gemma3:1B Q8_0
+------------------------------------------------------------
+Referencia -> LLM: chrF promedio: 78.57
+Base -> LLM: chrF promedio: 71.81
+Base-Q4_0 -> LLM: chrF promedio: 70.04
+
+Gemma3:1B Q4_K_M
+------------------------------------------------------------
+Referencia -> LLM: chrF promedio: 78.89
+Base -> LLM: chrF promedio: 72.54
+Base-Q4_0 -> LLM: chrF promedio: 73.41
