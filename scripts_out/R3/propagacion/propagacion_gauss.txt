@@ -1,0 +1,30 @@
+PROPAGACIÓN DEL ERROR ASR -> LLM
+========================================================================
+
+WER Base:      media = 10.0100 % | sigma = 4.5245 pp
+WER Base-Q4_0: media = 13.9200 % | sigma = 4.7093 pp
+
+Gemma3:1B FP16
+------------------------------------------------------------------------
+alpha: 0.621630
+sigma_chrF: 3.949233
+sigma_sistema Referencia: 3.949233
+sigma_sistema Base: 4.848391
+sigma_sistema Base-Q4_0: 4.915934
+
+Gemma3:1B Q8_0
+------------------------------------------------------------------------
+alpha: 0.625212
+sigma_chrF: 4.381862
+sigma_sistema Referencia: 4.381862
+sigma_sistema Base: 5.215611
+sigma_sistema Base-Q4_0: 5.279179
+
+Gemma3:1B Q4_K_M
+------------------------------------------------------------------------
+alpha: 0.441296
+sigma_chrF: 4.732533
+sigma_sistema Referencia: 4.732533
+sigma_sistema Base: 5.136480
+sigma_sistema Base-Q4_0: 5.168732
+
