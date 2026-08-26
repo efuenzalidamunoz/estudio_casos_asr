@@ -1,0 +1,54 @@
+archivo     chrF      
+----------------------
+test1.wav   71.56     
+  ref (es):          Ahora vamos a tomar sus immovitales para conozter mejor su estado de salud. Vamos a medir su presión arterial, temperatura, recuenciar de aga y nivel dos signos. Le pediré que permanezca tranquilo y sentado durante unos minutos mientras realizamos las mediciones necesarias.
+  ref (English): Now we're going to take your vital signs to get a better understanding of your health. We'll measure your blood pressure, temperature, heart rate, and oxygen level. I'd like you to remain calm and seated for a few minutes while we take the necessary measurements.
+  LLM -> English: Now, let’s take your insurance policies to better understand your health condition. We will measure your blood pressure, temperature, pulse, and signs. I will ask you to remain calm and seated for a few minutes while we take the necessary measurements.
+
+test10.wav  73.96     
+  ref (es):          No se preocupe, vamos a ayudarles y llevar su situación lo antes posible. Mira, se espera, si comienza a sentirse peor, presenta dificultad para respirar, dolor intensos en el pecho, perdida al conocimiento, confusión o cualquier otro síntoma que le preocupe, avise no se inmediatamente para poder atenderlo.
+  ref (English): Don't worry, we'll help you and assess your situation as soon as possible. While you wait, if you start to feel worse, experience difficulty breathing, severe chest pain, loss of consciousness, confusion, or any other symptoms that concern you, please let us know immediately so we can assist you.
+  LLM -> English: Don't worry, we will help you and get your situation as soon as possible. Look, it's expected that if you start to feel worse, you will experience difficulty breathing, intense chest pain, loss of knowledge, confusion, or any other symptoms that worry you, let us not immediately notify you so we can attend to you.
+
+test2.wav   62.97     
+  ref (es):          Hola, buenos días. Quiero que me explique con calma que le está basando. Dígame, ¿cuál es sol los síntomas que presenta cuando comenzaron? Si han emperado durante las últimas horas y si ha tenido el problema similar anteriormente, también necesito saber que estaba siendo cuando comenzaron los primeros síntomas.
+  ref (English): Hello, good morning. I'd like you to calmly explain what's happening to you. Tell me what symptoms you're experiencing, when they started, if they've worsened over the past few hours, and if you've had any similar problems before. I also need to know what you were doing when the first symptoms began.
+  LLM -> English: Hello, good morning. I want you to explain calmly that it’s basing you on. Tell me, what is the cause of the symptoms you’re experiencing when they started? If they’ve been oozing for the last few hours and if you’ve had this problem before, I also need to know what was happening when they started.
+
+test3.wav   73.86     
+  ref (es):          Quiero que me indique exactamente dónde siente el dolor, diga me si está en el pecho, abdomen, espalda, cabeza o alguna otra parte del cuerpo. También necesito saberte de cuando comenzó, que tan fuerte es en una escala de 1 al 10 y si el dolor aumenta cuando camina, respira o se mueve.
+  ref (English): I'd like you to tell me exactly where you feel the pain. Tell me if it's in your chest, abdomen, back, head, or some other part of your body. I also need to know when it started, how severe it is on a scale of one to ten, and if the pain increases when you walk, breathe, or move.
+  LLM -> English: I want you to tell me exactly where he/she feels the pain, tell me if it’s in the chest, abdomen, back, head, or any other part of the body. I also need to know when it started, how strong it is on a scale of 1 to 10 and if the pain increases when walking, breathing, or moving.
+
+test4.wav   60.55     
+  ref (es):          Nestecito saber si tiene dificultad para respirar o si siente que les falta el aire, digame también si presentador en el pecho, maréos, debilidad, palpitaciones o sensación de desmayu. Es importante que mentí que cuando comenzaron estos síntomas y se han aumentado de mi noido desde que llegaron el centro atención.
+  ref (English): I need to know if you are having difficulty breathing or feel short of breath. Please also tell me if you have chest pain, dizziness, weakness, palpitations, or feel faint. It is important that you tell me when these symptoms started and if they have gotten better or worse since you arrived at the care center.
+  LLM -> English: Nestecito, do you have difficulty breathing or feel like you’re not getting enough air? Tell me if you’re presenting in your chest, maréos, weakness, palpitations, or feeling dizzy. It’s important that you tell me that since these symptoms began and have increased since they arrived at the center.
+
+test5.wav   61.06     
+  ref (es):          Atenido fiebre durante las últimas horas, o durante los últimos días, también quiero saber si ha presentado todos, todo el orden de garganta, escalo fríos, con gestión nasal, bómitos o diarrea. Digame cuando comenzaron estos síntomas, si ha tomado algún medicamento y si ha notado alguna mejoría después de tomarlo.
+  ref (English): Have you had a fever in the last few hours or days? I also want to know if you have had a cough, sore throat, chills, nasal congestion, vomiting, or diarrhea. Please tell me when these symptoms started, if you have taken any medication, and if you have noticed any improvement after taking it.
+  LLM -> English: Fever for the last few hours, or the last few days, I also want to know if he has presented all, the entire order of the throat, chills, with nasal management, hiccups or diarrhea. What started these symptoms, has he taken any medication and has he noticed any improvement after taking it?
+
+test6.wav   68.63     
+  ref (es):          Tiene alguna enfermedad o condición médica que debamos conocer antes de atenderlo, digame si tiene diabetes y pertención, asma, problemas cartíacos, enfermedades respiratorias o otra condición importante. También necesito saber si ha tenido alguna operación recientemente o si ha estado pitalizado durante las últimas semanas.
+  ref (English): Do you have any illnesses or medical conditions that we should know about before we see you? Please tell me if you have diabetes, high blood pressure, asthma, heart problems, respiratory illnesses, or any other significant condition. I also need to know if you have had any surgery recently or if you have been hospitalized in the last few weeks.
+  LLM -> English: “Do you have any medical condition or condition we should know before treating you? Please tell me if you have diabetes, allergies, asthma, joint problems, respiratory illnesses, or any other important condition. Also, I need to know if you’ve had any recent surgeries or if you’ve been hospitalized recently.”
+
+test7.wav   60.4      
+  ref (es):          Está tomando actualmente algún medicamento, un día en el nombre de los medicamentos cotilizados, la cantidad que toma y cuantas veces saldi a los utilizados normalmente. También necesito saber si tomó algunos estos medicamentos hoy y aproximadamente aquí ahora tomó la última dosis.
+  ref (English): Are you currently taking any medication? Please tell me the names of the medications you use, the dosage you take, and how many times a day you normally take them. I also need to know if you took any of these medications today and approximately what time you took your last dose.
+  LLM -> English: He is currently taking some medication, a day in the name of the cotillions medications, the amount he takes and how many times he used normally. I also need to know if he took some of these medications today and here now took the last dose.
+
+test8.wav   56.69     
+  ref (es):          Esta lérgico alérgica algún medicamento, alimento, planta o sustancia es muy importante que nos informes sobre cualquier alergia conocida. Si ha tenido anteriormente una raccionalérgica, explíqueme cocurrió que síntomas presentó y cuánto tiempo pasó desde el contacto hasta que comenzaron los síntomas.
+  ref (English): Are you allergic to any medications, foods, plants, or substances? It is very important that you tell us about any known allergies. If you have had an allergic reaction before, please explain what happened, what symptoms you experienced, and how long it was from the time of exposure until the symptoms began.
+  LLM -> English: This allergic reaction is caused by some medication, food, plant, or substance. Please inform us about any known allergies. If you have previously had a reaction, explain the reaction you experienced and how long ago the contact started until the symptoms began.
+
+test9.wav   64.62     
+  ref (es):          Quiero saber cuando fue la última vez que comió y debió algo. Dígame, que alimentos consumió durante el día y se ha podido tomar agua normalmente. Se ha tenido bómitos o diarrea. Necesito saber cuántas veces han ocurrido y se ha podido mantener algún líquido sin volver a vomitar.
+  ref (English): I want to know when you last ate and drank anything. Please tell me what foods you consumed during the day and whether you have been able to drink water normally. If you have had vomiting or diarrhea, I need to know how many times it has occurred and whether you have been able to keep any liquids down without vomiting again.
+  LLM -> English: I want to know when the last time I ate and probably something. Tell me, what foods I consumed during the day and have been able to drink normally. I’ve had bowel movements or diarrhea. I need to know how many times this has happened and whether I’ve been able to keep fluids without vomiting.
+
+----------------------
+chrF promedio: 65.43

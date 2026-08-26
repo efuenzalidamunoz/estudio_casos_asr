@@ -44,14 +44,64 @@ OUTPUT_CSV = joinpath(
 
 # false = desviación estándar poblacional
 # sobre los 10 audios del corpus.
-#
-# Si el profesor pide explícitamente desviación
-# estándar muestral, cambiar a true.
 const CORRECTED = false
 
 
 # ============================================================
-# LEER WER DESDE LAS SALIDAS DE asr_pipeline.jl
+# CONDICIONES ASR
+# ============================================================
+
+condiciones_asr = [
+    (
+        key = "base",
+        nombre = "Base",
+        archivo = "base.txt"
+    ),
+    (
+        key = "tiny",
+        nombre = "Tiny",
+        archivo = "tiny.txt"
+    ),
+    (
+        key = "base_q8_0",
+        nombre = "Base-Q8_0",
+        archivo = "base_q8_0.txt"
+    ),
+    (
+        key = "base_q5_1",
+        nombre = "Base-Q5_1",
+        archivo = "base_q5_1.txt"
+    ),
+    (
+        key = "base_q4_0",
+        nombre = "Base-Q4_0",
+        archivo = "base_q4_0.txt"
+    )
+]
+
+
+# ============================================================
+# MODELOS OLLAMA
+# ============================================================
+
+modelos_llm = [
+    (
+        nombre = "Gemma3:1B FP16",
+        prefijo = "fp16"
+    ),
+    (
+        nombre = "Gemma3:1B Q8_0",
+        prefijo = "q8_0"
+    ),
+    (
+        nombre = "Gemma3:1B Q4_K_M",
+        prefijo = "q4_k_m"
+    )
+]
+
+
+# ============================================================
+# LEER WER DESDE asr_pipeline.jl
 # ============================================================
 
 function leer_wer(path::String)
@@ -63,10 +113,6 @@ function leer_wer(path::String)
     valores = Float64[]
 
     for linea in eachline(path)
-
-        # Ejemplo esperado:
-        #
-        # test1.wav   0.100   0.023   0.246
 
         m = match(
             r"^(\S+\.wav)\s+([0-9.eE+-]+)\s+([0-9.eE+-]+)\s+([0-9.eE+-]+)",
@@ -80,12 +126,7 @@ function leer_wer(path::String)
             m.captures[2]
         )
 
-        # asr_pipeline.jl entrega WER como fracción:
-        #
-        # 0.10 -> 10 %
-        #
-        # Para la propagación trabajaremos en
-        # puntos porcentuales.
+        # WER como fracción -> puntos porcentuales
         push!(
             valores,
             wer_fraccion * 100
@@ -113,10 +154,6 @@ function leer_chrf(path::String)
     valores = Float64[]
 
     for linea in eachline(path)
-
-        # Ejemplo:
-        #
-        # test1.wav   82.43
 
         m = match(
             r"^(\S+\.wav)\s+([0-9.eE+-]+)\s*$",
@@ -188,7 +225,6 @@ function calcular_alpha(
         error("No es posible calcular la pendiente")
 
     pendiente = numerador / denominador
-
     alpha = abs(pendiente)
 
     return pendiente, alpha
@@ -220,113 +256,63 @@ end
 function main()
 
     println()
-    println("="^72)
-    println("PROPAGACIÓN DEL ERROR - ASR -> LLM")
-    println("="^72)
+    println("="^80)
+    println("PROPAGACIÓN DEL ERROR - MATRIZ COMPLETA ASR -> LLM")
+    println("="^80)
     println()
 
 
-    # --------------------------------------------------------
-    # WER POR AUDIO
-    # --------------------------------------------------------
+    # ========================================================
+    # 1. LEER WER DE TODOS LOS MODELOS ASR
+    # ========================================================
 
-    wer_base = leer_wer(
-        joinpath(
-            ASR_DIR,
-            "base.txt"
+    datos_asr = Dict{String, Any}()
+
+    println("WER POR MODELO")
+    println("-"^80)
+
+    for condicion in condiciones_asr
+
+        wer = leer_wer(
+            joinpath(
+                ASR_DIR,
+                condicion.archivo
+            )
         )
-    )
 
-    wer_q4 = leer_wer(
-        joinpath(
-            ASR_DIR,
-            "base_q4_0.txt"
+        media_wer = mean(wer)
+        sigma_wer = sigma(wer)
+
+        datos_asr[condicion.key] = (
+            nombre = condicion.nombre,
+            wer = wer,
+            media_wer = media_wer,
+            sigma_wer = sigma_wer
         )
-    )
 
-
-    n_base = length(wer_base)
-    n_q4   = length(wer_q4)
-
-    println("Audios Base encontrados:       $n_base")
-    println("Audios Base-Q4_0 encontrados:  $n_q4")
-    println()
-
-
-    # --------------------------------------------------------
-    # ESTADÍSTICAS WER
-    # --------------------------------------------------------
-
-    media_wer_base = mean(
-        wer_base
-    )
-
-    media_wer_q4 = mean(
-        wer_q4
-    )
-
-    sigma_wer_base = sigma(
-        wer_base
-    )
-
-    sigma_wer_q4 = sigma(
-        wer_q4
-    )
-
-
-    println("WER")
-    println("-"^72)
-
-    @printf(
-        "%-18s media = %8.3f %%   sigma = %8.3f pp\n",
-        "Base",
-        media_wer_base,
-        sigma_wer_base
-    )
-
-    @printf(
-        "%-18s media = %8.3f %%   sigma = %8.3f pp\n",
-        "Base-Q4_0",
-        media_wer_q4,
-        sigma_wer_q4
-    )
+        @printf(
+            "%-18s media = %8.3f %%   sigma = %8.3f pp   n = %d\n",
+            condicion.nombre,
+            media_wer,
+            sigma_wer,
+            length(wer)
+        )
+    end
 
     println()
 
 
-    # --------------------------------------------------------
-    # MODELOS OLLAMA
-    # --------------------------------------------------------
-
-    modelos = [
-        (
-            nombre = "Gemma3:1B FP16",
-            prefijo = "fp16"
-        ),
-
-        (
-            nombre = "Gemma3:1B Q8_0",
-            prefijo = "q8_0"
-        ),
-
-        (
-            nombre = "Gemma3:1B Q4_K_M",
-            prefijo = "q4_k_m"
-        )
-    ]
-
+    # ========================================================
+    # 2. RESULTADOS POR LLM
+    # ========================================================
 
     resultados = []
 
 
-    # --------------------------------------------------------
-    # CADA LLM
-    # --------------------------------------------------------
-
-    for modelo in modelos
+    for modelo in modelos_llm
 
         # ----------------------------------------------------
-        # chrF POR CONDICIÓN
+        # REFERENCIA -> LLM
         # ----------------------------------------------------
 
         chrf_ref = leer_chrf(
@@ -336,89 +322,64 @@ function main()
             )
         )
 
-        chrf_base = leer_chrf(
-            joinpath(
-                LLM_DIR,
-                "$(modelo.prefijo)_base.txt"
+        media_chrf_ref = mean(chrf_ref)
+
+        # Variabilidad intrínseca del LLM:
+        # Referencia -> LLM no contiene error ASR.
+        sigma_chrf_intrinseco = sigma(chrf_ref)
+
+
+        # ----------------------------------------------------
+        # LEER chrF DE TODAS LAS CONDICIONES ASR
+        # ----------------------------------------------------
+
+        datos_chrf = Dict{String, Any}()
+
+        for condicion in condiciones_asr
+
+            chrf = leer_chrf(
+                joinpath(
+                    LLM_DIR,
+                    "$(modelo.prefijo)_$(condicion.key).txt"
+                )
             )
-        )
 
-        chrf_q4 = leer_chrf(
-            joinpath(
-                LLM_DIR,
-                "$(modelo.prefijo)_base_q4_0.txt"
+            datos_chrf[condicion.key] = (
+                valores = chrf,
+                media = mean(chrf),
+                sigma_observado = sigma(chrf)
             )
-        )
+        end
 
 
         # ----------------------------------------------------
-        # PROMEDIOS
-        # ----------------------------------------------------
-
-        media_chrf_ref = mean(
-            chrf_ref
-        )
-
-        media_chrf_base = mean(
-            chrf_base
-        )
-
-        media_chrf_q4 = mean(
-            chrf_q4
-        )
-
-
-        # ----------------------------------------------------
-        # sigma_chrF INTRÍNSECO DEL LLM
+        # 3. CALCULAR ALPHA MEDIANTE REGRESIÓN
         #
-        # Usamos Referencia -> LLM porque esta condición
-        # no contiene error del ASR.
+        # Puntos utilizados:
+        #
+        # Referencia      WER = 0
+        # Base
+        # Tiny
+        # Base-Q8_0
+        # Base-Q5_1
+        # Base-Q4_0
         # ----------------------------------------------------
 
-        sigma_chrf_base = sigma(
-            chrf_ref
-        )
+        x = Float64[0.0]
+        y = Float64[media_chrf_ref]
 
+        for condicion in condiciones_asr
 
-        # También calculamos los sigmas observados de las
-        # demás condiciones solo como información adicional.
+            push!(
+                x,
+                datos_asr[condicion.key].media_wer
+            )
 
-        sigma_chrf_base_asr = sigma(
-            chrf_base
-        )
-
-        sigma_chrf_q4_asr = sigma(
-            chrf_q4
-        )
-
-
-        # ----------------------------------------------------
-        # ALPHA
-        #
-        # Tres puntos experimentales:
-        #
-        # WER:
-        #   0
-        #   Base
-        #   Base-Q4_0
-        #
-        # chrF:
-        #   Referencia
-        #   Base
-        #   Base-Q4_0
-        # ----------------------------------------------------
-
-        x = Float64[
-            0.0,
-            media_wer_base,
-            media_wer_q4
-        ]
-
-        y = Float64[
-            media_chrf_ref,
-            media_chrf_base,
-            media_chrf_q4
-        ]
+            push!(
+                y,
+                datos_chrf[condicion.key].media
+            )
+        end
 
 
         pendiente, alpha = calcular_alpha(
@@ -428,128 +389,139 @@ function main()
 
 
         # ----------------------------------------------------
-        # PROPAGACIÓN
+        # REFERENCIA
         # ----------------------------------------------------
 
         sigma_ref = sigma_sistema(
             alpha,
             0.0,
-            sigma_chrf_base
+            sigma_chrf_intrinseco
         )
-
-        sigma_sistema_base = sigma_sistema(
-            alpha,
-            sigma_wer_base,
-            sigma_chrf_base
-        )
-
-        sigma_sistema_q4 = sigma_sistema(
-            alpha,
-            sigma_wer_q4,
-            sigma_chrf_base
-        )
-
-
-        # ----------------------------------------------------
-        # GUARDAR
-        # ----------------------------------------------------
 
         push!(
             resultados,
             (
-                modelo=modelo.nombre,
+                modelo = modelo.nombre,
+                condicion = "Referencia",
+                pendiente = pendiente,
+                alpha = alpha,
 
-                pendiente=pendiente,
-                alpha=alpha,
+                media_wer = 0.0,
+                sigma_wer = 0.0,
 
-                media_chrf_ref=media_chrf_ref,
-                media_chrf_base=media_chrf_base,
-                media_chrf_q4=media_chrf_q4,
+                media_chrf = media_chrf_ref,
+                sigma_chrf = sigma_chrf_intrinseco,
+                sigma_chrf_observado = sigma_chrf_intrinseco,
 
-                sigma_chrf=sigma_chrf_base,
-
-                sigma_chrf_obs_ref=sigma_chrf_base,
-                sigma_chrf_obs_base=sigma_chrf_base_asr,
-                sigma_chrf_obs_q4=sigma_chrf_q4_asr,
-
-                sigma_sistema_ref=sigma_ref,
-                sigma_sistema_base=sigma_sistema_base,
-                sigma_sistema_q4=sigma_sistema_q4
+                sigma_sistema = sigma_ref
             )
         )
+
+
+        # ----------------------------------------------------
+        # TODAS LAS CONDICIONES ASR
+        # ----------------------------------------------------
+
+        for condicion in condiciones_asr
+
+            asr = datos_asr[condicion.key]
+            chrf = datos_chrf[condicion.key]
+
+            sigma_total = sigma_sistema(
+                alpha,
+                asr.sigma_wer,
+                sigma_chrf_intrinseco
+            )
+
+            push!(
+                resultados,
+                (
+                    modelo = modelo.nombre,
+                    condicion = condicion.nombre,
+                    pendiente = pendiente,
+                    alpha = alpha,
+
+                    media_wer = asr.media_wer,
+                    sigma_wer = asr.sigma_wer,
+
+                    media_chrf = chrf.media,
+                    sigma_chrf = sigma_chrf_intrinseco,
+                    sigma_chrf_observado = chrf.sigma_observado,
+
+                    sigma_sistema = sigma_total
+                )
+            )
+        end
     end
 
 
     # ========================================================
-    # MOSTRAR RESULTADOS
+    # 4. MOSTRAR RESULTADOS
     # ========================================================
 
-    println("="^72)
+    println()
+    println("="^80)
     println("RESULTADOS DE PROPAGACIÓN")
-    println("="^72)
+    println("="^80)
 
-    for r in resultados
+
+    for modelo in modelos_llm
+
+        filas = filter(
+            r -> r.modelo == modelo.nombre,
+            resultados
+        )
+
+        primera = first(filas)
 
         println()
-        println(r.modelo)
-        println("-"^72)
+        println(modelo.nombre)
+        println("-"^80)
 
         @printf(
-            "Pendiente regresión:       %8.4f\n",
-            r.pendiente
+            "Pendiente regresión:      %8.4f\n",
+            primera.pendiente
         )
 
         @printf(
-            "alpha = |pendiente|:       %8.4f\n",
-            r.alpha
+            "alpha = |pendiente|:      %8.4f chrF/pp WER\n",
+            primera.alpha
         )
 
         @printf(
-            "sigma_chrF (LLM aislado):  %8.4f\n",
-            r.sigma_chrf
-        )
-
-        println()
-
-        @printf(
-            "sigma_sistema Referencia:  %8.4f\n",
-            r.sigma_sistema_ref
-        )
-
-        @printf(
-            "sigma_sistema Base:        %8.4f\n",
-            r.sigma_sistema_base
-        )
-
-        @printf(
-            "sigma_sistema Base-Q4_0:   %8.4f\n",
-            r.sigma_sistema_q4
+            "sigma_chrF intrínseco:    %8.4f puntos chrF\n",
+            primera.sigma_chrf
         )
 
         println()
-        println(
-            "sigma chrF observado por condición:"
-        )
 
         @printf(
-            "  Referencia -> LLM:       %8.4f\n",
-            r.sigma_chrf_obs_ref
+            "%-18s %10s %10s %10s %12s\n",
+            "Condición",
+            "WER %",
+            "σ_WER",
+            "chrF",
+            "σ_sistema"
         )
 
-        @printf(
-            "  Base -> LLM:             %8.4f\n",
-            r.sigma_chrf_obs_base
-        )
+        println("-"^80)
 
-        @printf(
-            "  Base-Q4_0 -> LLM:        %8.4f\n",
-            r.sigma_chrf_obs_q4
-        )
+        for r in filas
+
+            @printf(
+                "%-18s %10.3f %10.3f %10.3f %12.3f\n",
+                r.condicion,
+                r.media_wer,
+                r.sigma_wer,
+                r.media_chrf,
+                r.sigma_sistema
+            )
+        end
     end
 
 
     # ========================================================
-    # GUARDAR TXT
+    # 5. GUARDAR TXT
     # ========================================================
 
     open(
@@ -559,82 +531,101 @@ function main()
 
         println(
             io,
-            "PROPAGACIÓN DEL ERROR ASR -> LLM"
+            "PROPAGACIÓN DEL ERROR - MATRIZ COMPLETA ASR -> LLM"
         )
 
         println(
             io,
-            "="^72
-        )
-
-        println(io)
-
-        @printf(
-            io,
-            "WER Base:      media = %.4f %% | sigma = %.4f pp\n",
-            media_wer_base,
-            sigma_wer_base
-        )
-
-        @printf(
-            io,
-            "WER Base-Q4_0: media = %.4f %% | sigma = %.4f pp\n",
-            media_wer_q4,
-            sigma_wer_q4
+            "="^80
         )
 
         println(io)
 
 
-        for r in resultados
+        println(
+            io,
+            "WER POR MODELO ASR"
+        )
+
+        println(
+            io,
+            "-"^80
+        )
+
+        for condicion in condiciones_asr
+
+            asr = datos_asr[condicion.key]
+
+            @printf(
+                io,
+                "%-18s media = %.4f %% | sigma = %.4f pp\n",
+                condicion.nombre,
+                asr.media_wer,
+                asr.sigma_wer
+            )
+        end
+
+
+        for modelo in modelos_llm
+
+            filas = filter(
+                r -> r.modelo == modelo.nombre,
+                resultados
+            )
+
+            primera = first(filas)
+
+            println(io)
+            println(io)
 
             println(
                 io,
-                r.modelo
+                modelo.nombre
             )
 
             println(
                 io,
-                "-"^72
+                "-"^80
+            )
+
+            @printf(
+                io,
+                "pendiente: %.6f\n",
+                primera.pendiente
             )
 
             @printf(
                 io,
                 "alpha: %.6f\n",
-                r.alpha
+                primera.alpha
             )
 
             @printf(
                 io,
-                "sigma_chrF: %.6f\n",
-                r.sigma_chrf
-            )
-
-            @printf(
-                io,
-                "sigma_sistema Referencia: %.6f\n",
-                r.sigma_sistema_ref
-            )
-
-            @printf(
-                io,
-                "sigma_sistema Base: %.6f\n",
-                r.sigma_sistema_base
-            )
-
-            @printf(
-                io,
-                "sigma_sistema Base-Q4_0: %.6f\n",
-                r.sigma_sistema_q4
+                "sigma_chrF intrinseco: %.6f\n",
+                primera.sigma_chrf
             )
 
             println(io)
+
+            for r in filas
+
+                @printf(
+                    io,
+                    "%-18s | WER = %8.4f %% | sigma_WER = %8.4f pp | chrF = %8.4f | sigma_sistema = %8.4f\n",
+                    r.condicion,
+                    r.media_wer,
+                    r.sigma_wer,
+                    r.media_chrf,
+                    r.sigma_sistema
+                )
+            end
         end
     end
 
 
     # ========================================================
-    # GUARDAR CSV
+    # 6. GUARDAR CSV
     # ========================================================
 
     open(
@@ -644,7 +635,7 @@ function main()
 
         println(
             io,
-            "llm,condicion,alpha,sigma_wer,sigma_chrf,sigma_sistema"
+            "llm,condicion,media_wer,sigma_wer,media_chrf,alpha,sigma_chrf,sigma_chrf_observado,sigma_sistema"
         )
 
 
@@ -652,44 +643,29 @@ function main()
 
             @printf(
                 io,
-                "%s,Referencia,%.6f,%.6f,%.6f,%.6f\n",
+                "%s,%s,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
                 r.modelo,
+                r.condicion,
+                r.media_wer,
+                r.sigma_wer,
+                r.media_chrf,
                 r.alpha,
-                0.0,
                 r.sigma_chrf,
-                r.sigma_sistema_ref
-            )
-
-            @printf(
-                io,
-                "%s,Base,%.6f,%.6f,%.6f,%.6f\n",
-                r.modelo,
-                r.alpha,
-                sigma_wer_base,
-                r.sigma_chrf,
-                r.sigma_sistema_base
-            )
-
-            @printf(
-                io,
-                "%s,Base-Q4_0,%.6f,%.6f,%.6f,%.6f\n",
-                r.modelo,
-                r.alpha,
-                sigma_wer_q4,
-                r.sigma_chrf,
-                r.sigma_sistema_q4
+                r.sigma_chrf_observado,
+                r.sigma_sistema
             )
         end
     end
 
 
     println()
-    println("="^72)
+    println()
+    println("="^80)
     println("Archivos generados:")
     println()
     println("  $OUTPUT_TXT")
     println("  $OUTPUT_CSV")
-    println("="^72)
+    println("="^80)
 end
 
 

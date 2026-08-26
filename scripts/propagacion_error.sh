@@ -5,24 +5,28 @@ set -euo pipefail
 # ============================================================
 # R3 - Propagación del error ASR -> LLM
 #
-# Utiliza directamente:
-#   - asr_pipeline.jl
-#   - translate_reference.jl
+# Matriz completa:
 #
-# Condiciones:
-#   1. Referencia -> LLM
-#   2. Base -> LLM
-#   3. Base-Q4_0 -> LLM
+# ASR:
+#   - Referencia
+#   - Base
+#   - Tiny
+#   - Base-Q8_0
+#   - Base-Q5_1
+#   - Base-Q4_0
 #
 # LLM:
 #   - Gemma3:1B FP16
 #   - Gemma3:1B Q8_0
 #   - Gemma3:1B Q4_K_M
+#
+# Total:
+#   6 condiciones de entrada x 3 LLM = 18 combinaciones
 # ============================================================
 
 
 # ------------------------------------------------------------
-# Archivos Julia existentes
+# Scripts Julia
 # ------------------------------------------------------------
 
 ASR_SCRIPT="asr_pipeline_igpu.jl"
@@ -38,26 +42,58 @@ OUT_DIR="out"
 # Modelos Whisper
 # ------------------------------------------------------------
 
-WHISPER_BASE="whisper.cpp/models/ggml-base.bin"
-WHISPER_Q4="whisper.cpp/models/ggml-base-q4_0.bin"
+ASR_KEYS=(
+    "base"
+    "tiny"
+    "base_q8_0"
+    "base_q5_1"
+    "base_q4_0"
+)
+
+ASR_LABELS=(
+    "Base"
+    "Tiny"
+    "Base-Q8_0"
+    "Base-Q5_1"
+    "Base-Q4_0"
+)
+
+ASR_MODELS=(
+    "whisper.cpp/models/ggml-base.bin"
+    "whisper.cpp/models/ggml-tiny.bin"
+    "whisper.cpp/models/ggml-base-q8_0.bin"
+    "whisper.cpp/models/ggml-base-q5_1.bin"
+    "whisper.cpp/models/ggml-base-q4_0.bin"
+)
 
 
 # ------------------------------------------------------------
 # Modelos Ollama
-#
-# Si "ollama list" muestra nombres diferentes,
-# cambia solamente estas tres líneas.
 # ------------------------------------------------------------
 
-LLM_FP16="gemma3:1b-it-fp16"
-LLM_Q8="gemma3:1b-it-q8_0"
-LLM_Q4="gemma3:1b-it-q4_K_M"
+LLM_KEYS=(
+    "fp16"
+    "q8_0"
+    "q4_k_m"
+)
+
+LLM_LABELS=(
+    "Gemma3:1B FP16"
+    "Gemma3:1B Q8_0"
+    "Gemma3:1B Q4_K_M"
+)
+
+LLM_MODELS=(
+    "gemma3:1b-it-fp16"
+    "gemma3:1b-it-q8_0"
+    "gemma3:1b-it-q4_K_M"
+)
 
 TARGET_LANG="English"
 
 
 # ------------------------------------------------------------
-# Salidas
+# Directorios de salida
 # ------------------------------------------------------------
 
 RESULT_DIR="scripts_out/R3/propagacion"
@@ -66,10 +102,12 @@ ASR_RESULT_DIR="$RESULT_DIR/asr"
 TRANSCRIPT_DIR="$RESULT_DIR/transcripciones"
 LLM_RESULT_DIR="$RESULT_DIR/ollama"
 
+RESUMEN="$RESULT_DIR/resumen.txt"
+TABLA_CSV="$RESULT_DIR/tabla_completa.csv"
+
 mkdir -p \
     "$ASR_RESULT_DIR" \
-    "$TRANSCRIPT_DIR/base" \
-    "$TRANSCRIPT_DIR/base_q4_0" \
+    "$TRANSCRIPT_DIR" \
     "$LLM_RESULT_DIR"
 
 
@@ -84,22 +122,25 @@ RED="\033[0;31m"
 NC="\033[0m"
 
 
-# ------------------------------------------------------------
-# Comprobaciones
-# ------------------------------------------------------------
+# ============================================================
+# COMPROBACIONES
+# ============================================================
 
-echo -e "${CYAN}==============================================${NC}"
-echo -e "${CYAN} R3 - Propagación del error ASR -> LLM${NC}"
-echo -e "${CYAN}==============================================${NC}"
+echo -e "${CYAN}============================================================${NC}"
+echo -e "${CYAN} R3 - Matriz completa de propagación ASR -> LLM${NC}"
+echo -e "${CYAN}============================================================${NC}"
 echo
+
+
+# ------------------------------------------------------------
+# Comprobar archivos generales
+# ------------------------------------------------------------
 
 for archivo in \
     "$ASR_SCRIPT" \
     "$TRANSLATE_SCRIPT" \
     "$GROUNDTRUTH" \
-    "$GROUNDTRUTH_EN" \
-    "$WHISPER_BASE" \
-    "$WHISPER_Q4"
+    "$GROUNDTRUTH_EN"
 do
     if [[ ! -f "$archivo" ]]; then
         echo -e "${RED}ERROR: no existe:${NC}"
@@ -109,11 +150,28 @@ do
 done
 
 
+# ------------------------------------------------------------
+# Comprobar todos los modelos Whisper
+# ------------------------------------------------------------
+
+for modelo in "${ASR_MODELS[@]}"
+do
+    if [[ ! -f "$modelo" ]]; then
+        echo -e "${RED}ERROR: no existe el modelo Whisper:${NC}"
+        echo "$modelo"
+        exit 1
+    fi
+done
+
+
+# ------------------------------------------------------------
+# Comprobar programas
+# ------------------------------------------------------------
+
 if ! command -v julia >/dev/null 2>&1; then
     echo -e "${RED}ERROR: Julia no está instalado o no está en PATH.${NC}"
     exit 1
 fi
-
 
 if ! command -v ollama >/dev/null 2>&1; then
     echo -e "${RED}ERROR: Ollama no está instalado o no está en PATH.${NC}"
@@ -121,7 +179,7 @@ if ! command -v ollama >/dev/null 2>&1; then
 fi
 
 
-echo -e "${GREEN}Archivos requeridos encontrados.${NC}"
+echo -e "${GREEN}Archivos y modelos Whisper encontrados.${NC}"
 echo
 
 
@@ -134,18 +192,13 @@ ollama list
 echo
 
 
-# ------------------------------------------------------------
-# Backup seguro de groundtruth.txt
-#
-# translate_reference.jl tiene la ruta hardcodeada.
-# Por eso se reemplaza TEMPORALMENTE durante las
-# condiciones Base y Base-Q4_0.
-# ------------------------------------------------------------
+# ============================================================
+# BACKUP DE GROUNDTRUTH
+# ============================================================
 
 GROUNDTRUTH_BACKUP="$(mktemp)"
 
 cp "$GROUNDTRUTH" "$GROUNDTRUTH_BACKUP"
-
 
 restaurar_groundtruth() {
 
@@ -155,78 +208,74 @@ restaurar_groundtruth() {
     fi
 }
 
-
-# Se restaura incluso si presionas Ctrl+C
-# o algún comando falla.
 trap restaurar_groundtruth EXIT INT TERM
 
 
 # ============================================================
-# 1. ASR BASE
+# FUNCIÓN: GENERAR ASR
 # ============================================================
 
-echo
-echo -e "${CYAN}==============================================${NC}"
-echo -e "${CYAN} Generando ASR Base${NC}"
-echo -e "${CYAN}==============================================${NC}"
-echo
+generar_asr() {
 
+    local key="$1"
+    local label="$2"
+    local model="$3"
 
-rm -rf "$OUT_DIR"
-mkdir -p "$OUT_DIR"
+    local transcript_output="$TRANSCRIPT_DIR/$key"
+    local result_file="$ASR_RESULT_DIR/${key}.txt"
 
+    echo
+    echo -e "${CYAN}============================================================${NC}"
+    echo -e "${CYAN} Generando ASR: $label${NC}"
+    echo -e "${CYAN}============================================================${NC}"
+    echo
 
-julia "$ASR_SCRIPT" "$WHISPER_BASE" \
-    2>&1 | tee "$ASR_RESULT_DIR/base.txt"
+    rm -rf "$OUT_DIR"
+    mkdir -p "$OUT_DIR"
 
+    rm -rf "$transcript_output"
+    mkdir -p "$transcript_output"
 
-# Guardar transcripciones antes de que otra corrida
-# sobrescriba out/
-cp "$OUT_DIR"/*.txt "$TRANSCRIPT_DIR/base/"
+    julia "$ASR_SCRIPT" "$model" \
+        2>&1 | tee "$result_file"
 
+    # --------------------------------------------------------
+    # Verificar que whisper generó transcripciones
+    # --------------------------------------------------------
 
-echo
-echo -e "${GREEN}Transcripciones Base guardadas en:${NC}"
-echo "$TRANSCRIPT_DIR/base"
+    shopt -s nullglob
+    archivos_txt=("$OUT_DIR"/*.txt)
+    shopt -u nullglob
 
+    if [[ ${#archivos_txt[@]} -eq 0 ]]; then
+        echo -e "${RED}ERROR: no se generaron transcripciones para $label.${NC}"
+        exit 1
+    fi
 
-# ============================================================
-# 2. ASR BASE Q4_0
-# ============================================================
+    cp "${archivos_txt[@]}" "$transcript_output/"
 
-echo
-echo -e "${CYAN}==============================================${NC}"
-echo -e "${CYAN} Generando ASR Base-Q4_0${NC}"
-echo -e "${CYAN}==============================================${NC}"
-echo
-
-
-rm -rf "$OUT_DIR"
-mkdir -p "$OUT_DIR"
-
-
-julia "$ASR_SCRIPT" "$WHISPER_Q4" \
-    2>&1 | tee "$ASR_RESULT_DIR/base_q4_0.txt"
-
-
-cp "$OUT_DIR"/*.txt "$TRANSCRIPT_DIR/base_q4_0/"
-
-
-echo
-echo -e "${GREEN}Transcripciones Base-Q4_0 guardadas en:${NC}"
-echo "$TRANSCRIPT_DIR/base_q4_0"
+    echo
+    echo -e "${GREEN}Transcripciones guardadas en:${NC}"
+    echo "$transcript_output"
+}
 
 
 # ============================================================
-# Función:
-# construir groundtruth.txt temporal desde una carpeta
-# de transcripciones Whisper.
-#
-# Resultado:
-#
-# test1.wav,"texto generado por whisper"
-# test2.wav,"texto generado por whisper"
-# ...
+# 1. GENERAR TODAS LAS SALIDAS ASR
+# ============================================================
+
+for i in "${!ASR_KEYS[@]}"
+do
+    generar_asr \
+        "${ASR_KEYS[$i]}" \
+        "${ASR_LABELS[$i]}" \
+        "${ASR_MODELS[$i]}"
+done
+
+
+# ============================================================
+# FUNCIÓN:
+# construir groundtruth.txt temporal desde una salida ASR
 # ============================================================
 
 crear_groundtruth_desde_asr() {
@@ -235,106 +284,82 @@ crear_groundtruth_desde_asr() {
 
     : > "$GROUNDTRUTH"
 
-    for txt in "$carpeta"/*.txt
-    do
+    shopt -s nullglob
+    archivos_txt=("$carpeta"/*.txt)
+    shopt -u nullglob
 
+    if [[ ${#archivos_txt[@]} -eq 0 ]]; then
+        echo -e "${RED}ERROR: no hay transcripciones en:${NC}"
+        echo "$carpeta"
+        exit 1
+    fi
+
+    for txt in "${archivos_txt[@]}"
+    do
         nombre="$(basename "$txt" .txt)"
         wav="${nombre}.wav"
 
-        # Whisper genera normalmente una sola línea,
-        # pero eliminamos saltos de línea por seguridad.
+        # Unificar el texto en una sola línea
         texto="$(
             tr '\n' ' ' < "$txt" |
             sed 's/[[:space:]]\+/ /g' |
             sed 's/^ //; s/ $//'
         )"
 
-        # Escapar comillas para mantener el formato CSV.
+        # Mantener compatibilidad con el CSV utilizado
         texto="${texto//\"/\\\"}"
 
         printf '%s,"%s"\n' \
             "$wav" \
             "$texto" \
             >> "$GROUNDTRUTH"
-
     done
 }
 
 
 # ============================================================
-# Función:
-# ejecutar una condición para los tres LLM
+# FUNCIÓN:
+# ejecutar una condición con TODOS los LLM
 # ============================================================
 
 ejecutar_llms() {
 
     local condicion="$1"
-    local nombre_archivo="$2"
+    local condicion_key="$2"
 
     echo
-    echo -e "${YELLOW}----------------------------------------------${NC}"
+    echo -e "${YELLOW}------------------------------------------------------------${NC}"
     echo -e "${YELLOW} Condición: $condicion${NC}"
-    echo -e "${YELLOW}----------------------------------------------${NC}"
+    echo -e "${YELLOW}------------------------------------------------------------${NC}"
 
+    for i in "${!LLM_KEYS[@]}"
+    do
+        local llm_key="${LLM_KEYS[$i]}"
+        local llm_label="${LLM_LABELS[$i]}"
+        local llm_model="${LLM_MODELS[$i]}"
 
-    # --------------------------------------------------------
-    # FP16
-    # --------------------------------------------------------
+        echo
+        echo -e "${CYAN}$llm_label${NC}"
 
-    echo
-    echo -e "${CYAN}Gemma3:1B FP16${NC}"
-
-    julia "$TRANSLATE_SCRIPT" \
-        "$LLM_FP16" \
-        "$TARGET_LANG" \
-        2>&1 | tee \
-        "$LLM_RESULT_DIR/fp16_${nombre_archivo}.txt"
-
-
-    # --------------------------------------------------------
-    # Q8_0
-    # --------------------------------------------------------
-
-    echo
-    echo -e "${CYAN}Gemma3:1B Q8_0${NC}"
-
-    julia "$TRANSLATE_SCRIPT" \
-        "$LLM_Q8" \
-        "$TARGET_LANG" \
-        2>&1 | tee \
-        "$LLM_RESULT_DIR/q8_0_${nombre_archivo}.txt"
-
-
-    # --------------------------------------------------------
-    # Q4_K_M
-    # --------------------------------------------------------
-
-    echo
-    echo -e "${CYAN}Gemma3:1B Q4_K_M${NC}"
-
-    julia "$TRANSLATE_SCRIPT" \
-        "$LLM_Q4" \
-        "$TARGET_LANG" \
-        2>&1 | tee \
-        "$LLM_RESULT_DIR/q4_k_m_${nombre_archivo}.txt"
+        julia "$TRANSLATE_SCRIPT" \
+            "$llm_model" \
+            "$TARGET_LANG" \
+            2>&1 | tee \
+            "$LLM_RESULT_DIR/${llm_key}_${condicion_key}.txt"
+    done
 }
 
 
 # ============================================================
-# 3. REFERENCIA -> LLM
-#
-# Aquí se utiliza groundtruth.txt ORIGINAL.
-# WER de entrada = 0.
+# 2. REFERENCIA -> TODOS LOS LLM
 # ============================================================
 
 echo
-echo -e "${CYAN}==============================================${NC}"
+echo -e "${CYAN}============================================================${NC}"
 echo -e "${CYAN} Referencia -> LLM${NC}"
-echo -e "${CYAN}==============================================${NC}"
-
+echo -e "${CYAN}============================================================${NC}"
 
 cp "$GROUNDTRUTH_BACKUP" "$GROUNDTRUTH"
-
 
 ejecutar_llms \
     "Referencia -> LLM" \
@@ -342,159 +367,269 @@ ejecutar_llms \
 
 
 # ============================================================
-# 4. BASE -> LLM
-#
-# Se reemplaza temporalmente groundtruth.txt con las
-# transcripciones generadas por Base.
-# translate_reference.jl las traducirá y comparará
-# contra groundtruth_en.txt.
+# 3. TODAS LAS SALIDAS ASR -> TODOS LOS LLM
 # ============================================================
 
-echo
-echo -e "${CYAN}==============================================${NC}"
-echo -e "${CYAN} Base -> LLM${NC}"
-echo -e "${CYAN}==============================================${NC}"
+for i in "${!ASR_KEYS[@]}"
+do
+    asr_key="${ASR_KEYS[$i]}"
+    asr_label="${ASR_LABELS[$i]}"
 
+    echo
+    echo -e "${CYAN}============================================================${NC}"
+    echo -e "${CYAN} $asr_label -> LLM${NC}"
+    echo -e "${CYAN}============================================================${NC}"
 
-crear_groundtruth_desde_asr \
-    "$TRANSCRIPT_DIR/base"
+    crear_groundtruth_desde_asr \
+        "$TRANSCRIPT_DIR/$asr_key"
 
-
-ejecutar_llms \
-    "Base -> LLM" \
-    "base"
-
-
-# ============================================================
-# 5. BASE-Q4_0 -> LLM
-# ============================================================
-
-echo
-echo -e "${CYAN}==============================================${NC}"
-echo -e "${CYAN} Base-Q4_0 -> LLM${NC}"
-echo -e "${CYAN}==============================================${NC}"
-
-
-crear_groundtruth_desde_asr \
-    "$TRANSCRIPT_DIR/base_q4_0"
-
-
-ejecutar_llms \
-    "Base-Q4_0 -> LLM" \
-    "base_q4_0"
+    ejecutar_llms \
+        "$asr_label -> LLM" \
+        "$asr_key"
+done
 
 
 # ============================================================
-# Restaurar groundtruth original
+# RESTAURAR GROUNDTRUTH ORIGINAL
 # ============================================================
 
 restaurar_groundtruth
 
-# Evitar que trap intente hacerlo nuevamente.
 trap - EXIT INT TERM
 
 
 # ============================================================
-# 6. RESUMEN DE RESULTADOS
-#
-# No recalcula absolutamente nada.
-# Solo extrae las líneas "promedio" que imprimieron
-# tus propios códigos Julia.
+# FUNCIONES PARA EXTRAER RESULTADOS NUMÉRICOS
 # ============================================================
 
-RESUMEN="$RESULT_DIR/resumen.txt"
+extraer_ultimo_numero() {
 
+    local linea="$1"
+
+    printf '%s\n' "$linea" |
+        grep -oE '[-+]?[0-9]+([.,][0-9]+)?([eE][-+]?[0-9]+)?' |
+        tail -n 1 |
+        tr ',' '.'
+}
+
+
+extraer_chrf() {
+
+    local archivo="$1"
+    local linea
+
+    linea="$(
+        grep "chrF promedio" "$archivo" |
+        tail -n 1 || true
+    )"
+
+    if [[ -z "$linea" ]]; then
+        echo "N/A"
+        return
+    fi
+
+    extraer_ultimo_numero "$linea"
+}
+
+
+extraer_wer_pct() {
+
+    local archivo="$1"
+    local linea
+    local valor
+
+    linea="$(
+        grep -E "WER promedio" "$archivo" |
+        tail -n 1 || true
+    )"
+
+    if [[ -z "$linea" ]]; then
+        echo "N/A"
+        return
+    fi
+
+    # --------------------------------------------------------
+    # Si la línea ya contiene %, usamos el valor porcentual
+    # --------------------------------------------------------
+
+    if [[ "$linea" == *"%"* ]]; then
+
+        valor="$(
+            printf '%s\n' "$linea" |
+            grep -oE '[0-9]+([.,][0-9]+)?[[:space:]]*%' |
+            tail -n 1 |
+            tr -d ' %' |
+            tr ',' '.'
+        )"
+
+        echo "$valor"
+        return
+    fi
+
+    # --------------------------------------------------------
+    # Si no tiene %, extraemos el número.
+    # Si está entre 0 y 1, asumimos que es una proporción
+    # y la convertimos a porcentaje.
+    # --------------------------------------------------------
+
+    valor="$(extraer_ultimo_numero "$linea")"
+
+    awk -v x="$valor" '
+        BEGIN {
+            if (x >= 0 && x <= 1)
+                printf "%.6f", x * 100
+            else
+                printf "%.6f", x
+        }
+    '
+}
+
+
+# ============================================================
+# 4. RESUMEN DE RESULTADOS
+# ============================================================
 
 {
     echo "============================================================"
-    echo "R3 - PROPAGACIÓN DEL ERROR ASR -> LLM"
+    echo "R3 - MATRIZ COMPLETA ASR -> LLM"
     echo "============================================================"
     echo
 
     echo "ERROR DE ENTRADA - ASR"
     echo "------------------------------------------------------------"
-
-    echo "Base:"
-    grep -E \
-        "WER promedio|CER promedio|RTF promedio" \
-        "$ASR_RESULT_DIR/base.txt" || true
-
     echo
 
-    echo "Base-Q4_0:"
-    grep -E \
-        "WER promedio|CER promedio|RTF promedio" \
-        "$ASR_RESULT_DIR/base_q4_0.txt" || true
+    for i in "${!ASR_KEYS[@]}"
+    do
+        asr_key="${ASR_KEYS[$i]}"
+        asr_label="${ASR_LABELS[$i]}"
 
+        echo "$asr_label:"
 
-    echo
+        grep -E \
+            "WER promedio|CER promedio|RTF promedio" \
+            "$ASR_RESULT_DIR/${asr_key}.txt" || true
+
+        echo
+    done
+
     echo
     echo "ERROR DE SALIDA - chrF"
     echo "============================================================"
 
+    for i in "${!LLM_KEYS[@]}"
+    do
+        llm_key="${LLM_KEYS[$i]}"
+        llm_label="${LLM_LABELS[$i]}"
 
-    echo
-    echo "Gemma3:1B FP16"
-    echo "------------------------------------------------------------"
+        echo
+        echo "$llm_label"
+        echo "------------------------------------------------------------"
 
-    echo -n "Referencia -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/fp16_referencia.txt" || true
+        echo -n "Referencia -> LLM: "
+        grep "chrF promedio" \
+            "$LLM_RESULT_DIR/${llm_key}_referencia.txt" || true
 
-    echo -n "Base -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/fp16_base.txt" || true
+        for j in "${!ASR_KEYS[@]}"
+        do
+            asr_key="${ASR_KEYS[$j]}"
+            asr_label="${ASR_LABELS[$j]}"
 
-    echo -n "Base-Q4_0 -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/fp16_base_q4_0.txt" || true
+            echo -n "$asr_label -> LLM: "
 
-
-    echo
-    echo "Gemma3:1B Q8_0"
-    echo "------------------------------------------------------------"
-
-    echo -n "Referencia -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/q8_0_referencia.txt" || true
-
-    echo -n "Base -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/q8_0_base.txt" || true
-
-    echo -n "Base-Q4_0 -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/q8_0_base_q4_0.txt" || true
-
-
-    echo
-    echo "Gemma3:1B Q4_K_M"
-    echo "------------------------------------------------------------"
-
-    echo -n "Referencia -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/q4_k_m_referencia.txt" || true
-
-    echo -n "Base -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/q4_k_m_base.txt" || true
-
-    echo -n "Base-Q4_0 -> LLM: "
-    grep "chrF promedio" \
-        "$LLM_RESULT_DIR/q4_k_m_base_q4_0.txt" || true
+            grep "chrF promedio" \
+                "$LLM_RESULT_DIR/${llm_key}_${asr_key}.txt" || true
+        done
+    done
 
 } | tee "$RESUMEN"
 
 
+# ============================================================
+# 5. GENERAR CSV CON LA TABLA COMPLETA
+# ============================================================
+
+echo \
+"llm,condicion,wer_pct,chrf" \
+> "$TABLA_CSV"
+
+
+# ------------------------------------------------------------
+# Referencia -> LLM
+# WER = 0
+# ------------------------------------------------------------
+
+for i in "${!LLM_KEYS[@]}"
+do
+    llm_key="${LLM_KEYS[$i]}"
+    llm_label="${LLM_LABELS[$i]}"
+
+    chrf="$(
+        extraer_chrf \
+            "$LLM_RESULT_DIR/${llm_key}_referencia.txt"
+    )"
+
+    printf '"%s","%s",%s,%s\n' \
+        "$llm_label" \
+        "Referencia -> LLM" \
+        "0.0" \
+        "$chrf" \
+        >> "$TABLA_CSV"
+done
+
+
+# ------------------------------------------------------------
+# Todos los ASR -> todos los LLM
+# ------------------------------------------------------------
+
+for i in "${!LLM_KEYS[@]}"
+do
+    llm_key="${LLM_KEYS[$i]}"
+    llm_label="${LLM_LABELS[$i]}"
+
+    for j in "${!ASR_KEYS[@]}"
+    do
+        asr_key="${ASR_KEYS[$j]}"
+        asr_label="${ASR_LABELS[$j]}"
+
+        wer="$(
+            extraer_wer_pct \
+                "$ASR_RESULT_DIR/${asr_key}.txt"
+        )"
+
+        chrf="$(
+            extraer_chrf \
+                "$LLM_RESULT_DIR/${llm_key}_${asr_key}.txt"
+        )"
+
+        printf '"%s","%s",%s,%s\n' \
+            "$llm_label" \
+            "$asr_label -> LLM" \
+            "$wer" \
+            "$chrf" \
+            >> "$TABLA_CSV"
+    done
+done
+
+
+# ============================================================
+# FINAL
+# ============================================================
+
 echo
-echo -e "${GREEN}==============================================${NC}"
+echo -e "${GREEN}============================================================${NC}"
 echo -e "${GREEN} Experimento finalizado${NC}"
-echo -e "${GREEN}==============================================${NC}"
+echo -e "${GREEN}============================================================${NC}"
 echo
 
 echo "Resultados:"
 echo "  $RESULT_DIR"
 echo
+
 echo "Resumen:"
 echo "  $RESUMEN"
+echo
+
+echo "Tabla completa:"
+echo "  $TABLA_CSV"
 echo

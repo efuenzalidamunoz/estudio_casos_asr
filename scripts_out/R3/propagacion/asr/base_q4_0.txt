@@ -1,36 +1,36 @@
 archivo     WER       CER       RTF       
 ------------------------------------------
-test1.wav   0.119     0.051     0.261     
+test1.wav   0.119     0.051     0.219     
   ref: Ahora vamos a tomar sus signos vitales para conocer mejor su estado de salud. Vamos a medir su presión arterial, temperatura, frecuencia cardíaca y nivel de oxígeno. Le pediré que permanezca tranquilo y sentado durante unos minutos mientras realizamos las mediciones necesarias.
   hyp: Ahora, vamos a tomar sus imnomitales para conocer mejor su estado de salud. Vamos a medir su presión arterial, temperatura, frecuencia guardiaga y nivel dosigno. Le pediré que permanezca tranquilo y sentado durante unos minutos mientras realizamos las mediciones necesarias.
-test2.wav   0.062     0.01      0.27      
+test2.wav   0.062     0.01      0.231     
   ref: Hola, buenos días. Quiero que me explique con calma qué le está pasando. Dígame cuáles son los síntomas que presenta, cuándo comenzaron, si han empeorado durante las últimas horas y si ha tenido algún problema similar anteriormente. También necesito saber qué estaba haciendo cuando comenzaron los primeros síntomas.
   hyp: Hola, buenos días. Quiero que me explique con calma que le está pasando. Díame, ¿cuáles son los síntomas que presenta cuando comenzaron? Si han empeorado durante las últimas horas y si ha tenido algún problema similar anteriormente, también necesito saber qué estaba haciendo cuando comenzaron los primeros síntomas.
-test3.wav   0.077     0.032     0.239     
+test3.wav   0.077     0.032     0.204     
   ref: Quiero que me indique exactamente dónde siente el dolor. Dígame si está en el pecho, abdomen, espalda, cabeza o alguna otra parte del cuerpo. También necesito saber desde cuándo comenzó, qué tan fuerte es en una escala del uno al diez y si el dolor aumenta cuando camina, respira o se mueve.
   hyp: Quiero que me indique exactamente dónde siente el dolor. Dígame si está en el pecho, abdomen, espalda, cabeza, o alguna otra parte del cuerpo. También necesito saber desde cuando comenzó qué tan fuerte es en una escala el 1 al 10 y si el dolor aumenta cuando camina respira o se mueve.
-test4.wav   0.154     0.035     0.266     
+test4.wav   0.154     0.035     0.224     
   ref: Necesito saber si tiene dificultad para respirar o si siente que le falta el aire. Dígame también si presenta dolor en el pecho, mareos, debilidad, palpitaciones o sensación de desmayo. Es importante que me indique cuándo comenzaron estos síntomas y si han aumentado o disminuido desde que llegaron al centro de atención.
   hyp: Necesito saber si tiene dificulta para respirar o si siente que le falta el aire. Díame también si presenta dolor en el pecho, mareos, debilidad, carpetaciones o sensación de desmayo. Es importante que me indique cuando comenzaron estos síntomas y se han aumentado desminuido desde que llegaron el centro de atención.
-test5.wav   0.128     0.02      0.266     
+test5.wav   0.128     0.02      0.224     
   ref: ¿Ha tenido fiebre durante las últimas horas o durante los últimos días? También quiero saber si ha presentado tos, dolor de garganta, escalofríos, congestión nasal, vómitos o diarrea. Dígame cuándo comenzaron estos síntomas, si ha tomado algún medicamento y si ha notado alguna mejoría después de tomarlo.
   hyp: ¿Has tenido fiebre durante las últimas horas o durante los últimos días? También quiero saber si ha presentado dos, dolor de garganta, escalofríos, congestión nasal, bómitos o diarrea. Dígame cuando comenzaron estos síntomas, se ha tomado algún medicamento y se ha notado alguna mejoría después de tomarlo.
-test6.wav   0.136     0.025     0.251     
+test6.wav   0.136     0.025     0.215     
   ref: ¿Tiene alguna enfermedad o condición médica que debamos conocer antes de atenderlo? Dígame si tiene diabetes, hipertensión, asma, problemas cardíacos, enfermedades respiratorias u otra condición importante. También necesito saber si ha tenido alguna operación recientemente o si ha estado hospitalizado durante las últimas semanas.
   hyp: Tiene alguna enfermedad o condición medica que debamos conocer antes de atenderlo? Dígame si tiene diabetes, hipertensión, asthma, problemas cardiacos, enfermedad de respiratorias o otra condición importante. También necesito saber si ha tenido alguna operación recientemente o si ha estado hospitalizado durante las últimas semanas.
-test7.wav   0.227     0.04      0.264     
+test7.wav   0.227     0.04      0.227     
   ref: ¿Está tomando actualmente algún medicamento? Dígame el nombre de los medicamentos que utiliza, la cantidad que toma y cuántas veces al día los utiliza normalmente. También necesito saber si tomó alguno de estos medicamentos hoy y aproximadamente a qué hora tomó la última dosis.
   hyp: ¿Estás tomando actualmente algo medicamento? Díame el nombre de los medicamentos que utiliza, la cantidad que toma y cuántas veces saldía los utilizan normalmente. También necesitó saber si tomó alguno de estos medicamentos hoy y aproximadamente aquí ahora tomó la última dosis.
-test8.wav   0.13      0.036     0.257     
+test8.wav   0.13      0.036     0.229     
   ref: ¿Es alérgico o alérgica a algún medicamento, alimento, planta o sustancia? Es muy importante que nos informe sobre cualquier alergia conocida. Si ha tenido anteriormente una reacción alérgica, explíqueme qué ocurrió, qué síntomas presentó y cuánto tiempo pasó desde el contacto hasta que comenzaron los síntomas.
   hyp: Es alérgico alérgico algún medicamento, alimento, planta o sustancia es muy importante que nos informe sobre cualquier alergia conocida. Si ha tenido anteriormente una ración alérgica, explique que ocurrió. ¿Qué síntomas presentó? ¿Y cuánto tiempo pasó desde el contacto hasta que comenzaron los síntomas?
-test9.wav   0.163     0.033     0.298     
+test9.wav   0.163     0.033     0.246     
   ref: Quiero saber cuándo fue la última vez que comió y bebió algo. Dígame qué alimentos consumió durante el día y si ha podido tomar agua normalmente. Si ha tenido vómitos o diarrea, necesito saber cuántas veces han ocurrido y si ha podido mantener algún líquido sin volver a vomitar.
   hyp: Quiero saber cuando fue la última vez que comió y bebió algo. Dígame, ¿qué alimentos consumió durante el día y se ha podido tomar agua normalmente? ¿Se ha tenido bómitos o de arrea? Necesito saber cuántas veces han ocurrido y se ha podido mantener algún líquido sin volver a bómitar.
-test10.wav  0.196     0.074     0.287     
+test10.wav  0.196     0.074     0.243     
   ref: No se preocupe, vamos a ayudarle y a evaluar su situación lo antes posible. Mientras espera, si comienza a sentirse peor, presenta dificultad para respirar, dolor intenso en el pecho, pérdida del conocimiento, confusión o cualquier otro síntoma que le preocupe, avísenos inmediatamente para poder atenderlo.
   hyp: No se preocupe, vamos a ayudarle, llevarlo a su situación lo antes posible. Miras espera, si comienzas de sentirse peor, presenta dificultad para respirar, dolor e intenso en el pecho, perdiad al conocimiento, confusión, o cualquier otro síntoma que le preocupe, avícenos inmediatamente para poder atenderlo.
 ------------------------------------------
 WER promedio: 0.139
 CER promedio: 0.036
-RTF promedio: 0.266
+RTF promedio: 0.226
