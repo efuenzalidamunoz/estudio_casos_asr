@@ -5,7 +5,11 @@ set -euo pipefail
 # ============================================================
 # R3 - Propagación del error ASR -> LLM
 #
-# Matriz completa:
+# Referencia:
+#   translate_reference.jl
+#
+# Salidas ASR:
+#   translate_pipeline.jl
 #
 # ASR:
 #   - Referencia
@@ -21,7 +25,7 @@ set -euo pipefail
 #   - Gemma3:1B Q4_K_M
 #
 # Total:
-#   6 condiciones de entrada x 3 LLM = 18 combinaciones
+#   6 condiciones x 3 LLM = 18 combinaciones
 # ============================================================
 
 
@@ -30,7 +34,9 @@ set -euo pipefail
 # ------------------------------------------------------------
 
 ASR_SCRIPT="asr_pipeline_igpu.jl"
-TRANSLATE_SCRIPT="translate_reference.jl"
+
+TRANSLATE_REFERENCE_SCRIPT="translate_reference.jl"
+TRANSLATE_PIPELINE_SCRIPT="translate_pipeline.jl"
 
 GROUNDTRUTH="groundtruth.txt"
 GROUNDTRUTH_EN="groundtruth_en.txt"
@@ -93,7 +99,7 @@ TARGET_LANG="English"
 
 
 # ------------------------------------------------------------
-# Directorios de salida
+# Directorios
 # ------------------------------------------------------------
 
 RESULT_DIR="scripts_out/R3/propagacion"
@@ -127,18 +133,15 @@ NC="\033[0m"
 # ============================================================
 
 echo -e "${CYAN}============================================================${NC}"
-echo -e "${CYAN} R3 - Matriz completa de propagación ASR -> LLM${NC}"
+echo -e "${CYAN} R3 - Matriz completa ASR -> LLM${NC}"
 echo -e "${CYAN}============================================================${NC}"
 echo
 
 
-# ------------------------------------------------------------
-# Comprobar archivos generales
-# ------------------------------------------------------------
-
 for archivo in \
     "$ASR_SCRIPT" \
-    "$TRANSLATE_SCRIPT" \
+    "$TRANSLATE_REFERENCE_SCRIPT" \
+    "$TRANSLATE_PIPELINE_SCRIPT" \
     "$GROUNDTRUTH" \
     "$GROUNDTRUTH_EN"
 do
@@ -150,10 +153,6 @@ do
 done
 
 
-# ------------------------------------------------------------
-# Comprobar todos los modelos Whisper
-# ------------------------------------------------------------
-
 for modelo in "${ASR_MODELS[@]}"
 do
     if [[ ! -f "$modelo" ]]; then
@@ -164,14 +163,11 @@ do
 done
 
 
-# ------------------------------------------------------------
-# Comprobar programas
-# ------------------------------------------------------------
-
 if ! command -v julia >/dev/null 2>&1; then
     echo -e "${RED}ERROR: Julia no está instalado o no está en PATH.${NC}"
     exit 1
 fi
+
 
 if ! command -v ollama >/dev/null 2>&1; then
     echo -e "${RED}ERROR: Ollama no está instalado o no está en PATH.${NC}"
@@ -179,36 +175,12 @@ if ! command -v ollama >/dev/null 2>&1; then
 fi
 
 
-echo -e "${GREEN}Archivos y modelos Whisper encontrados.${NC}"
+echo -e "${GREEN}Archivos requeridos encontrados.${NC}"
 echo
-
-
-# ------------------------------------------------------------
-# Mostrar modelos Ollama disponibles
-# ------------------------------------------------------------
 
 echo -e "${CYAN}Modelos Ollama disponibles:${NC}"
 ollama list
 echo
-
-
-# ============================================================
-# BACKUP DE GROUNDTRUTH
-# ============================================================
-
-GROUNDTRUTH_BACKUP="$(mktemp)"
-
-cp "$GROUNDTRUTH" "$GROUNDTRUTH_BACKUP"
-
-restaurar_groundtruth() {
-
-    if [[ -f "$GROUNDTRUTH_BACKUP" ]]; then
-        cp "$GROUNDTRUTH_BACKUP" "$GROUNDTRUTH"
-        rm -f "$GROUNDTRUTH_BACKUP"
-    fi
-}
-
-trap restaurar_groundtruth EXIT INT TERM
 
 
 # ============================================================
@@ -236,11 +208,13 @@ generar_asr() {
     rm -rf "$transcript_output"
     mkdir -p "$transcript_output"
 
+
     julia "$ASR_SCRIPT" "$model" \
         2>&1 | tee "$result_file"
 
+
     # --------------------------------------------------------
-    # Verificar que whisper generó transcripciones
+    # Comprobar que se generaron transcripciones
     # --------------------------------------------------------
 
     shopt -s nullglob
@@ -252,10 +226,17 @@ generar_asr() {
         exit 1
     fi
 
+
+    # --------------------------------------------------------
+    # Guardarlas antes de que la siguiente corrida
+    # sobrescriba out/
+    # --------------------------------------------------------
+
     cp "${archivos_txt[@]}" "$transcript_output/"
 
+
     echo
-    echo -e "${GREEN}Transcripciones guardadas en:${NC}"
+    echo -e "${GREEN}Transcripciones guardadas:${NC}"
     echo "$transcript_output"
 }
 
@@ -275,62 +256,59 @@ done
 
 # ============================================================
 # FUNCIÓN:
-# construir groundtruth.txt temporal desde una salida ASR
+# Cargar las transcripciones de una condición nuevamente
+# en out/, porque translate_pipeline.jl lee directamente out/
 # ============================================================
 
-crear_groundtruth_desde_asr() {
+cargar_transcripciones_en_out() {
 
     local carpeta="$1"
 
-    : > "$GROUNDTRUTH"
+    rm -rf "$OUT_DIR"
+    mkdir -p "$OUT_DIR"
 
     shopt -s nullglob
     archivos_txt=("$carpeta"/*.txt)
     shopt -u nullglob
 
     if [[ ${#archivos_txt[@]} -eq 0 ]]; then
-        echo -e "${RED}ERROR: no hay transcripciones en:${NC}"
+        echo -e "${RED}ERROR: no existen transcripciones en:${NC}"
         echo "$carpeta"
         exit 1
     fi
 
-    for txt in "${archivos_txt[@]}"
-    do
-        nombre="$(basename "$txt" .txt)"
-        wav="${nombre}.wav"
-
-        # Unificar el texto en una sola línea
-        texto="$(
-            tr '\n' ' ' < "$txt" |
-            sed 's/[[:space:]]\+/ /g' |
-            sed 's/^ //; s/ $//'
-        )"
-
-        # Mantener compatibilidad con el CSV utilizado
-        texto="${texto//\"/\\\"}"
-
-        printf '%s,"%s"\n' \
-            "$wav" \
-            "$texto" \
-            >> "$GROUNDTRUTH"
-    done
+    cp "${archivos_txt[@]}" "$OUT_DIR/"
 }
 
 
 # ============================================================
 # FUNCIÓN:
-# ejecutar una condición con TODOS los LLM
+# REFERENCIA -> todos los LLM
+#
+# Usa translate_reference.jl
+#
+# groundtruth.txt
+#       |
+#       v
+#      LLM
+#       |
+#       v
+# traducción
+#       |
+#       v
+# groundtruth_en.txt
+#
+# Mide el error/calidad propia del LLM.
 # ============================================================
 
-ejecutar_llms() {
-
-    local condicion="$1"
-    local condicion_key="$2"
+ejecutar_referencia_llms() {
 
     echo
     echo -e "${YELLOW}------------------------------------------------------------${NC}"
-    echo -e "${YELLOW} Condición: $condicion${NC}"
+    echo -e "${YELLOW} Referencia -> LLM${NC}"
+    echo -e "${YELLOW} usando translate_reference.jl${NC}"
     echo -e "${YELLOW}------------------------------------------------------------${NC}"
+
 
     for i in "${!LLM_KEYS[@]}"
     do
@@ -341,7 +319,51 @@ ejecutar_llms() {
         echo
         echo -e "${CYAN}$llm_label${NC}"
 
-        julia "$TRANSLATE_SCRIPT" \
+        julia "$TRANSLATE_REFERENCE_SCRIPT" \
+            "$llm_model" \
+            "$TARGET_LANG" \
+            2>&1 | tee \
+            "$LLM_RESULT_DIR/${llm_key}_referencia.txt"
+    done
+}
+
+
+# ============================================================
+# FUNCIÓN:
+# ASR -> todos los LLM
+#
+# Usa translate_pipeline.jl
+#
+# translate_pipeline.jl lee:
+#
+#   groundtruth.txt
+#   out/*.txt
+#
+# y traduce ambos textos con el mismo LLM.
+# ============================================================
+
+ejecutar_asr_llms() {
+
+    local condicion="$1"
+    local condicion_key="$2"
+
+    echo
+    echo -e "${YELLOW}------------------------------------------------------------${NC}"
+    echo -e "${YELLOW} $condicion -> LLM${NC}"
+    echo -e "${YELLOW} usando translate_pipeline.jl${NC}"
+    echo -e "${YELLOW}------------------------------------------------------------${NC}"
+
+
+    for i in "${!LLM_KEYS[@]}"
+    do
+        local llm_key="${LLM_KEYS[$i]}"
+        local llm_label="${LLM_LABELS[$i]}"
+        local llm_model="${LLM_MODELS[$i]}"
+
+        echo
+        echo -e "${CYAN}$llm_label${NC}"
+
+        julia "$TRANSLATE_PIPELINE_SCRIPT" \
             "$llm_model" \
             "$TARGET_LANG" \
             2>&1 | tee \
@@ -352,6 +374,8 @@ ejecutar_llms() {
 
 # ============================================================
 # 2. REFERENCIA -> TODOS LOS LLM
+#
+# SOLO translate_reference.jl
 # ============================================================
 
 echo
@@ -359,15 +383,13 @@ echo -e "${CYAN}============================================================${NC
 echo -e "${CYAN} Referencia -> LLM${NC}"
 echo -e "${CYAN}============================================================${NC}"
 
-cp "$GROUNDTRUTH_BACKUP" "$GROUNDTRUTH"
-
-ejecutar_llms \
-    "Referencia -> LLM" \
-    "referencia"
+ejecutar_referencia_llms
 
 
 # ============================================================
-# 3. TODAS LAS SALIDAS ASR -> TODOS LOS LLM
+# 3. TODOS LOS ASR -> TODOS LOS LLM
+#
+# SOLO translate_pipeline.jl
 # ============================================================
 
 for i in "${!ASR_KEYS[@]}"
@@ -380,26 +402,27 @@ do
     echo -e "${CYAN} $asr_label -> LLM${NC}"
     echo -e "${CYAN}============================================================${NC}"
 
-    crear_groundtruth_desde_asr \
+
+    # --------------------------------------------------------
+    # translate_pipeline.jl lee siempre desde out/
+    # --------------------------------------------------------
+
+    cargar_transcripciones_en_out \
         "$TRANSCRIPT_DIR/$asr_key"
 
-    ejecutar_llms \
-        "$asr_label -> LLM" \
+
+    # --------------------------------------------------------
+    # Ejecutar los tres LLM con translate_pipeline.jl
+    # --------------------------------------------------------
+
+    ejecutar_asr_llms \
+        "$asr_label" \
         "$asr_key"
 done
 
 
 # ============================================================
-# RESTAURAR GROUNDTRUTH ORIGINAL
-# ============================================================
-
-restaurar_groundtruth
-
-trap - EXIT INT TERM
-
-
-# ============================================================
-# FUNCIONES PARA EXTRAER RESULTADOS NUMÉRICOS
+# FUNCIONES PARA EXTRAER RESULTADOS
 # ============================================================
 
 extraer_ultimo_numero() {
@@ -448,8 +471,9 @@ extraer_wer_pct() {
         return
     fi
 
+
     # --------------------------------------------------------
-    # Si la línea ya contiene %, usamos el valor porcentual
+    # Si ya viene expresado en porcentaje
     # --------------------------------------------------------
 
     if [[ "$linea" == *"%"* ]]; then
@@ -466,10 +490,9 @@ extraer_wer_pct() {
         return
     fi
 
+
     # --------------------------------------------------------
-    # Si no tiene %, extraemos el número.
-    # Si está entre 0 y 1, asumimos que es una proporción
-    # y la convertimos a porcentaje.
+    # Si viene como fracción: 0.10 -> 10 %
     # --------------------------------------------------------
 
     valor="$(extraer_ultimo_numero "$linea")"
@@ -486,7 +509,7 @@ extraer_wer_pct() {
 
 
 # ============================================================
-# 4. RESUMEN DE RESULTADOS
+# 4. RESUMEN
 # ============================================================
 
 {
@@ -494,6 +517,11 @@ extraer_wer_pct() {
     echo "R3 - MATRIZ COMPLETA ASR -> LLM"
     echo "============================================================"
     echo
+
+
+    # --------------------------------------------------------
+    # ASR
+    # --------------------------------------------------------
 
     echo "ERROR DE ENTRADA - ASR"
     echo "------------------------------------------------------------"
@@ -513,9 +541,15 @@ extraer_wer_pct() {
         echo
     done
 
+
+    # --------------------------------------------------------
+    # Traducción
+    # --------------------------------------------------------
+
     echo
-    echo "ERROR DE SALIDA - chrF"
+    echo "SALIDA - chrF"
     echo "============================================================"
+
 
     for i in "${!LLM_KEYS[@]}"
     do
@@ -526,9 +560,16 @@ extraer_wer_pct() {
         echo "$llm_label"
         echo "------------------------------------------------------------"
 
+
+        # Referencia: translate_reference.jl
+
         echo -n "Referencia -> LLM: "
+
         grep "chrF promedio" \
             "$LLM_RESULT_DIR/${llm_key}_referencia.txt" || true
+
+
+        # ASR: translate_pipeline.jl
 
         for j in "${!ASR_KEYS[@]}"
         do
@@ -546,7 +587,7 @@ extraer_wer_pct() {
 
 
 # ============================================================
-# 5. GENERAR CSV CON LA TABLA COMPLETA
+# 5. CSV COMPLETO
 # ============================================================
 
 echo \
@@ -556,7 +597,7 @@ echo \
 
 # ------------------------------------------------------------
 # Referencia -> LLM
-# WER = 0
+# translate_reference.jl
 # ------------------------------------------------------------
 
 for i in "${!LLM_KEYS[@]}"
@@ -580,6 +621,7 @@ done
 
 # ------------------------------------------------------------
 # Todos los ASR -> todos los LLM
+# translate_pipeline.jl
 # ------------------------------------------------------------
 
 for i in "${!LLM_KEYS[@]}"
@@ -624,12 +666,13 @@ echo
 
 echo "Resultados:"
 echo "  $RESULT_DIR"
-echo
 
+echo
 echo "Resumen:"
 echo "  $RESUMEN"
-echo
 
+echo
 echo "Tabla completa:"
 echo "  $TABLA_CSV"
+
 echo

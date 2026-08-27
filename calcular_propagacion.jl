@@ -142,7 +142,7 @@ end
 
 
 # ============================================================
-# LEER chrF DESDE translate_reference.jl
+# LEER chrF DESDE LOS RESULTADOS DE TRADUCCIÓN
 # ============================================================
 
 function leer_chrf(path::String)
@@ -155,8 +155,9 @@ function leer_chrf(path::String)
 
     for linea in eachline(path)
 
+        # Acepta testN.wav y testN.txt.
         m = match(
-            r"^(\S+\.wav)\s+([0-9.eE+-]+)\s*$",
+            r"^(\S+\.(?:wav|txt))\s+([0-9.eE+-]+)\s*$"i,
             strip(linea)
         )
 
@@ -167,10 +168,7 @@ function leer_chrf(path::String)
             m.captures[2]
         )
 
-        push!(
-            valores,
-            score
-        )
+        push!(valores, score)
     end
 
     isempty(valores) && error(
@@ -179,7 +177,6 @@ function leer_chrf(path::String)
 
     return valores
 end
-
 
 # ============================================================
 # DESVIACIÓN ESTÁNDAR

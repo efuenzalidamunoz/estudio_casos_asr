@@ -12,41 +12,41 @@ Base-Q4_0          media = 13.9200 % | sigma = 4.7093 pp
 
 Gemma3:1B FP16
 --------------------------------------------------------------------------------
-pendiente: -0.571650
-alpha: 0.571650
+pendiente: -0.208462
+alpha: 0.208462
 sigma_chrF intrinseco: 3.949233
 
 Referencia         | WER =   0.0000 % | sigma_WER =   0.0000 pp | chrF =  79.4440 | sigma_sistema =   3.9492
-Base               | WER =  10.0100 % | sigma_WER =   4.5245 pp | chrF =  72.6980 | sigma_sistema =   4.7208
-Tiny               | WER =  22.0900 % | sigma_WER =   6.0989 pp | chrF =  66.5290 | sigma_sistema =   5.2680
-Base-Q8_0          | WER =   9.5700 % | sigma_WER =   4.0279 pp | chrF =  71.5560 | sigma_sistema =   4.5715
-Base-Q5_1          | WER =  11.5100 % | sigma_WER =   4.6386 pp | chrF =  71.1670 | sigma_sistema =   4.7569
-Base-Q4_0          | WER =  13.9200 % | sigma_WER =   4.7093 pp | chrF =  70.9700 | sigma_sistema =   4.7795
+Base               | WER =  10.0100 % | sigma_WER =   4.5245 pp | chrF =  84.3300 | sigma_sistema =   4.0603
+Tiny               | WER =  22.0900 % | sigma_WER =   6.0989 pp | chrF =  75.1320 | sigma_sistema =   4.1488
+Base-Q8_0          | WER =   9.5700 % | sigma_WER =   4.0279 pp | chrF =  83.4020 | sigma_sistema =   4.0375
+Base-Q5_1          | WER =  11.5100 % | sigma_WER =   4.6386 pp | chrF =  83.9540 | sigma_sistema =   4.0659
+Base-Q4_0          | WER =  13.9200 % | sigma_WER =   4.7093 pp | chrF =  81.0490 | sigma_sistema =   4.0694
 
 
 Gemma3:1B Q8_0
 --------------------------------------------------------------------------------
-pendiente: -0.595598
-alpha: 0.595598
+pendiente: -0.145749
+alpha: 0.145749
 sigma_chrF intrinseco: 4.381862
 
 Referencia         | WER =   0.0000 % | sigma_WER =   0.0000 pp | chrF =  78.5680 | sigma_sistema =   4.3819
-Base               | WER =  10.0100 % | sigma_WER =   4.5245 pp | chrF =  71.8070 | sigma_sistema =   5.1442
-Tiny               | WER =  22.0900 % | sigma_WER =   6.0989 pp | chrF =  65.1160 | sigma_sistema =   5.6917
-Base-Q8_0          | WER =   9.5700 % | sigma_WER =   4.0279 pp | chrF =  70.8780 | sigma_sistema =   4.9956
-Base-Q5_1          | WER =  11.5100 % | sigma_WER =   4.6386 pp | chrF =  70.8840 | sigma_sistema =   5.1801
-Base-Q4_0          | WER =  13.9200 % | sigma_WER =   4.7093 pp | chrF =  70.0370 | sigma_sistema =   5.2027
+Base               | WER =  10.0100 % | sigma_WER =   4.5245 pp | chrF =  83.8620 | sigma_sistema =   4.4312
+Tiny               | WER =  22.0900 % | sigma_WER =   6.0989 pp | chrF =  75.5880 | sigma_sistema =   4.4711
+Base-Q8_0          | WER =   9.5700 % | sigma_WER =   4.0279 pp | chrF =  82.9550 | sigma_sistema =   4.4210
+Base-Q5_1          | WER =  11.5100 % | sigma_WER =   4.6386 pp | chrF =  84.2130 | sigma_sistema =   4.4337
+Base-Q4_0          | WER =  13.9200 % | sigma_WER =   4.7093 pp | chrF =  81.0140 | sigma_sistema =   4.4353
 
 
 Gemma3:1B Q4_K_M
 --------------------------------------------------------------------------------
-pendiente: -0.568396
-alpha: 0.568396
+pendiente: -0.233193
+alpha: 0.233193
 sigma_chrF intrinseco: 4.732533
 
 Referencia         | WER =   0.0000 % | sigma_WER =   0.0000 pp | chrF =  78.8910 | sigma_sistema =   4.7325
-Base               | WER =  10.0100 % | sigma_WER =   4.5245 pp | chrF =  72.5420 | sigma_sistema =   5.3861
-Tiny               | WER =  22.0900 % | sigma_WER =   6.0989 pp | chrF =  65.4300 | sigma_sistema =   5.8664
-Base-Q8_0          | WER =   9.5700 % | sigma_WER =   4.0279 pp | chrF =  72.0380 | sigma_sistema =   5.2572
-Base-Q5_1          | WER =  11.5100 % | sigma_WER =   4.6386 pp | chrF =  72.8620 | sigma_sistema =   5.4174
-Base-Q4_0          | WER =  13.9200 % | sigma_WER =   4.7093 pp | chrF =  73.4090 | sigma_sistema =   5.4371
+Base               | WER =  10.0100 % | sigma_WER =   4.5245 pp | chrF =  84.6790 | sigma_sistema =   4.8487
+Tiny               | WER =  22.0900 % | sigma_WER =   6.0989 pp | chrF =  74.1510 | sigma_sistema =   4.9416
+Base-Q8_0          | WER =   9.5700 % | sigma_WER =   4.0279 pp | chrF =  83.3410 | sigma_sistema =   4.8248
+Base-Q5_1          | WER =  11.5100 % | sigma_WER =   4.6386 pp | chrF =  84.8730 | sigma_sistema =   4.8546
+Base-Q4_0          | WER =  13.9200 % | sigma_WER =   4.7093 pp | chrF =  80.3930 | sigma_sistema =   4.8583

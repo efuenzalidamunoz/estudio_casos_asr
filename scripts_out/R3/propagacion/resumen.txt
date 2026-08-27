@@ -8,55 +8,55 @@ ERROR DE ENTRADA - ASR
 Base:
 WER promedio: 0.1
 CER promedio: 0.023
-RTF promedio: 0.199
+RTF promedio: 0.254
 
 Tiny:
 WER promedio: 0.221
 CER promedio: 0.059
-RTF promedio: 0.108
+RTF promedio: 0.152
 
 Base-Q8_0:
 WER promedio: 0.096
 CER promedio: 0.022
-RTF promedio: 0.203
+RTF promedio: 0.237
 
 Base-Q5_1:
 WER promedio: 0.115
 CER promedio: 0.028
-RTF promedio: 0.265
+RTF promedio: 0.305
 
 Base-Q4_0:
 WER promedio: 0.139
 CER promedio: 0.036
-RTF promedio: 0.226
+RTF promedio: 0.262
 
 
-ERROR DE SALIDA - chrF
+SALIDA - chrF
 ============================================================
 
 Gemma3:1B FP16
 ------------------------------------------------------------
 Referencia -> LLM: chrF promedio: 79.44
-Base -> LLM: chrF promedio: 72.7
-Tiny -> LLM: chrF promedio: 66.53
-Base-Q8_0 -> LLM: chrF promedio: 71.56
-Base-Q5_1 -> LLM: chrF promedio: 71.17
-Base-Q4_0 -> LLM: chrF promedio: 70.97
+Base -> LLM: chrF promedio: 84.33
+Tiny -> LLM: chrF promedio: 75.13
+Base-Q8_0 -> LLM: chrF promedio: 83.4
+Base-Q5_1 -> LLM: chrF promedio: 83.95
+Base-Q4_0 -> LLM: chrF promedio: 81.05
 
 Gemma3:1B Q8_0
 ------------------------------------------------------------
 Referencia -> LLM: chrF promedio: 78.57
-Base -> LLM: chrF promedio: 71.81
-Tiny -> LLM: chrF promedio: 65.12
-Base-Q8_0 -> LLM: chrF promedio: 70.88
-Base-Q5_1 -> LLM: chrF promedio: 70.88
-Base-Q4_0 -> LLM: chrF promedio: 70.04
+Base -> LLM: chrF promedio: 83.86
+Tiny -> LLM: chrF promedio: 75.59
+Base-Q8_0 -> LLM: chrF promedio: 82.95
+Base-Q5_1 -> LLM: chrF promedio: 84.21
+Base-Q4_0 -> LLM: chrF promedio: 81.01
 
 Gemma3:1B Q4_K_M
 ------------------------------------------------------------
 Referencia -> LLM: chrF promedio: 78.89
-Base -> LLM: chrF promedio: 72.54
-Tiny -> LLM: chrF promedio: 65.43
-Base-Q8_0 -> LLM: chrF promedio: 72.04
-Base-Q5_1 -> LLM: chrF promedio: 72.86
-Base-Q4_0 -> LLM: chrF promedio: 73.41
+Base -> LLM: chrF promedio: 84.68
+Tiny -> LLM: chrF promedio: 74.15
+Base-Q8_0 -> LLM: chrF promedio: 83.34
+Base-Q5_1 -> LLM: chrF promedio: 84.87
+Base-Q4_0 -> LLM: chrF promedio: 80.39
